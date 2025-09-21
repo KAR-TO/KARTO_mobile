@@ -6,14 +6,12 @@ export const Colors = {
   warning: "#FF9500",
   error: "#FF3B30",
   // background: "#F2F2F7",
-  // surface: "#FFFFFF",
   text: "#212121",
   placeholder: "#AAAAAA",
-  // Colors referenced in styles
   textSecondary: "#8E8E93",
   textPrimary: "#212121",
   border: "#AAAAAA",
-  inputBackground: "#FFFFFF",
+  inputBackground: "#f9f8f8ff",
 };
 
 export const Fonts = {

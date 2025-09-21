@@ -1,124 +1,182 @@
+// ilk inputu deyis , storage elave et,  buttonlari duzelt , check hissesi elave ele
+
 import { useRouter } from 'expo-router';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+    Alert, StyleSheet, Text, TextInput,
+    TouchableOpacity,
+    View,
+    TouchableWithoutFeedback,
+    Keyboard,
+} from 'react-native';
 import { Colors, Fonts } from '../../constants/theme';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import  { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
+import CustomButton from '../../components/CustomButton';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import register from'./register';
+
 
 export default function LoginScreen() {
     const [toggleSecureEntry, setToggleSecureEntry] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const router = useRouter();
+
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [email, setEmail] = useState('');
-    const [phone, setPhone] = useState(''); 
+    const [phone, setPhone] = useState('');
 
-//     const usernameError = useMemo(() => {
-//     if (!touched.username) return '';
-//     if (!username.trim()) return t('Username is required');
-//     return '';
-//   }, [username, t, touched.username]);
+    const isStrongPassword = useCallback((value) => value.trim().length >= 6, []);
+    const [touched, setTouched] = useState({ username: false, password: false, email: false, phone: false });
 
-//   const passwordError = useMemo(() => {
-//     if (!touched.password) return '';
-//     if (!password.trim()) return t('Password is required');
-//     if (!isStrongPassword(password)) return t('Password must be at least 6 characters');
-//     return '';
-//   }, [password, isStrongPassword, t, touched.password]);
+    const usernameError = useMemo(() => {
+        if (!touched.username) return '';
+        if (!username.trim()) return 'Tam adınızı daxil edin';
+        return '';
+    }, [username, touched.username]);
 
-//   const companyError = useMemo(() => {
-//     if (!touched.company) return '';
-//     if (!selectedCompany) return t('Please select a company');
-//     return '';
-//   }, [selectedCompany, t, touched.company]);
+    const passwordError = useMemo(() => {
+        if (!touched.password) return '';
+        if (!password.trim()) return 'Şifrə daxil edin';
+        if (!isStrongPassword(password)) return 'Şifrə ən az 6 simvoldan ibarət olmalıdır';
+        return '';
+    }, [password, isStrongPassword, touched.password]);
 
-//   const isFormValid = useMemo(() => {
-//     return !usernameError && !passwordError && !companyError;
-//   }, [usernameError, passwordError, companyError]);
+    const emailError = useMemo(() => {
+        if (!touched.email) return '';
+        if (!email.trim()) return 'Email daxil edin';
+        if (!/\S+@\S+\.\S+/.test(email)) return 'Düzgün email formatı daxil edin';
+        return '';
+    }, [email, touched.email]);
 
+    const phoneError = useMemo(() => {
+        if (!touched.phone) return '';
+        if (!phone.trim()) return 'Telefon nömrəsini daxil edin';
+        if (!/^\+994\d{9}$/.test(phone)) return 'Telefon nömrəsi düzgün formatda deyil';
+        return '';
+    }, [phone, touched.phone]);
 
+    const isFormValid = useMemo(() => {
+        return !usernameError && !passwordError && !emailError && !phoneError;
+    }, [usernameError, passwordError, emailError, phoneError]);
 
-    const handleLogin = () => {
-        router.replace('/(tabs)/home');
+    const onBlurUserName = useCallback(() => setTouched((s) => ({ ...s, username: true })), []);
+    const onBlurPassword = useCallback(() => setTouched((s) => ({ ...s, password: true })), []);
+    const onBlurEmail = useCallback(() => setTouched((s) => ({ ...s, email: true })), []);
+    const onBlurPhone = useCallback(() => setTouched((s) => ({ ...s, phone: true })), []);
+
+    const handleRegister = async () => {
+        setTouched({ username: true, password: true, email: true, phone: true });
+
+        if (!isFormValid) {
+            Alert.alert('Xəta', 'Zəhmət olmasa, formu düzgün doldurun.');
+            return;
+        }
+
+        try {
+            setIsSubmitting(true);
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+            router.replace('./register');
+        } catch (error) {
+            Alert.alert('Xəta', 'Daxil olmaq alınmadı.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.headerText}>Xoş gəldiniz!</Text>
-            </View>
-            <View style={styles.context}>
-                <View style={styles.inputContainer}>
-                    <Text style={styles.label}>Tam adınız</Text>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <KeyboardAwareScrollView
+                contentContainerStyle={{ flexGrow: 1, padding: 20 }}
+                keyboardShouldPersistTaps="handled"
+                enableOnAndroid={true}   
+                extraScrollHeight={20}
+            >
+                <View style={styles.container}>
+                    <View style={styles.header}>
+                        <Text style={styles.headerText}>Xoş gəldiniz!</Text>
+                    </View>
 
-                    <View style={styles.inputWrapper}>
-                        <TextInput
-                            placeholder="Burada yazın"
-                            placeholderTextColor={Colors.placeholder}
-                            keyboardType="default"
-                            style={styles.input}
+                    <View style={styles.context}>
+
+
+
+                        {/* Phone */}
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Telefon nömrə</Text>
+                            <View style={styles.inputWrapper}>
+                                <TextInput
+                                    placeholder="+994 XX XXX XX XX"
+                                    placeholderTextColor={Colors.placeholder}
+                                    keyboardType="phone-pad"
+                                    style={styles.input}
+                                    value={phone}
+                                    onChangeText={setPhone}
+                                    onBlur={onBlurPhone}
+                                />
+                            </View>
+                            {phoneError ? <Text style={styles.errorText}>{phoneError}</Text> : null}
+                        </View>
+
+                         {/* Password */}
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Şifrə</Text>
+                            <View style={styles.inputWrapper}>
+                                <TextInput
+                                    placeholder="********"
+                                    placeholderTextColor={Colors.placeholder}
+                                    keyboardType="default"
+                                    style={styles.input}
+                                    secureTextEntry={toggleSecureEntry}
+                                    onBlur={onBlurPassword}
+                                    value={password}
+                                    onChangeText={setPassword}
+                                />
+                                <TouchableOpacity
+                                    style={styles.iconWrapper}
+                                    onPress={() => setToggleSecureEntry(!toggleSecureEntry)}
+                                >
+                                    <AntDesign
+                                        name={toggleSecureEntry ? 'eye' : 'eye-invisible'}
+                                        size={20}
+                                        color={Colors.primary}
+                                    />
+                                </TouchableOpacity>
+                            </View>
+                            {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+                        </View>
+                    </View>
+
+
+                    {/* Buttons */}
+                    <View style={{ marginTop: 40 }}>
+                        <CustomButton
+                            title="Daxil olmaq"
+                            // onPress={handleLogin}
+                            loading={isSubmitting}
+                            disabled={!isFormValid || isSubmitting}
+                        />
+                    </View>
+
+                    <View style={{ marginTop: 20 }}>
+                        <CustomButton
+                            title="Qeydiyyatdan keç"
+                            onPress={handleRegister}
+                            color={Colors.primary}
+                            backgroundColor={Colors.inputBackground}
                         />
                     </View>
                 </View>
 
-                <View style={styles.inputContainer}>
-                    <Text style={styles.label}>Şifrə</Text>
-
-                    <View style={styles.inputWrapper}>
-                        <TextInput
-                            placeholder="********"
-                            placeholderTextColor={Colors.placeholder}
-                            keyboardType="phone-pad"
-                            style={styles.input}
-                        />
-
-                        <TouchableOpacity
-                            style={styles.iconWrapper}
-                            onPress={() => setToggleSecureEntry(!toggleSecureEntry)}
-                        >
-                            <AntDesign
-                                name={toggleSecureEntry ? 'eye' : 'eye-invisible'}
-                                size={20}
-                                color={Colors.primary}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                </View>
-
-                <View style={styles.inputContainer}>
-                    <Text style={styles.label}>Elektron poçt</Text>
-
-                    <View style={styles.inputWrapper}>
-                        <TextInput
-                            placeholder="***@gmail.com"
-                            placeholderTextColor={Colors.placeholder}
-                            keyboardType="email-address"
-                            style={styles.input}
-                        />
-                    </View>
-                </View>
-
-                <View style={styles.inputContainer}>
-                    <Text style={styles.label}>Telefon nömrə</Text>
-
-                    <View style={styles.inputWrapper}>
-                        <TextInput
-                            placeholder="+994 XX XXX XX XX"
-                            placeholderTextColor={Colors.placeholder}
-                            keyboardType="phone-pad"
-                            style={styles.input}
-                        />
-                    </View>
-                </View>
-
-            </View>
-        </View>
+            </KeyboardAwareScrollView>
+        </TouchableWithoutFeedback>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 20,
+        // padding: 20,
     },
     header: {
         marginTop: 70,
@@ -147,7 +205,7 @@ const styles = StyleSheet.create({
         borderColor: Colors.border,
         borderRadius: 10,
         paddingHorizontal: 12,
-        backgroundColor: Colors.inputBackground,
+        backgroundColor: "#ffffff",
     },
     input: {
         flex: 1,
@@ -158,5 +216,11 @@ const styles = StyleSheet.create({
     },
     iconWrapper: {
         padding: 6,
+    },
+    errorText: {
+        marginTop: 4,
+        color: 'red',
+        fontSize: 12,
+        fontFamily: Fonts.Poppins_Regular,
     },
 });
