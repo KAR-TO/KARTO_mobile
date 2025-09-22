@@ -15,7 +15,7 @@ const CustomButton = ({
       activeOpacity={0.7}
       style={[
         styles.button,
-        { backgroundColor: disabled ? Colors.primary : backgroundColor },
+        { backgroundColor: disabled ? Colors.disabled : backgroundColor },
       ]}
       onPress={!disabled && !loading ? onPress : null}
       disabled={disabled || loading}

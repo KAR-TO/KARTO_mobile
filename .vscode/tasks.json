@@ -1,0 +1,11 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "expo-start-check",
+			"type": "shell",
+			"command": "npx expo -V",
+			"group": "build"
+		}
+	]
+}

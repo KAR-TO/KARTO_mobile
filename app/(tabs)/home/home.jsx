@@ -1,25 +1,40 @@
-import { StyleSheet, Text, View } from 'react-native';
-import { Colors, Fonts } from '../../../constants/theme';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
+import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { Colors } from '../../../constants/theme';
 
-export default function HomeScreen() {
-    return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Home Screen</Text>
-        </View>
-    );
+
+export default function LogoutButton() {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('userToken');
+
+      router.replace('../../(auth)/login');
+    } catch (error) {
+      console.log('Logout error:', error);
+    }
+  };
+
+  return (
+    <TouchableOpacity style={styles.button} onPress={handleLogout}>
+      <Text style={styles.text}>Çıxış</Text>
+    </TouchableOpacity>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: Colors.background,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        fontFamily: Fonts.MPlusRegular,
-        color: Colors.text,
-    },
+  button: {
+    backgroundColor: Colors.primary,
+    padding: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  text: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 16,
+  },
 });

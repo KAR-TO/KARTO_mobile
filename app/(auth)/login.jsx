@@ -1,39 +1,47 @@
-// ilk inputu deyis , storage elave et,  buttonlari duzelt , check hissesi elave ele
-
-import { useRouter } from 'expo-router';
-import {
-    Alert, StyleSheet, Text, TextInput,
-    TouchableOpacity,
-    View,
-    TouchableWithoutFeedback,
-    Keyboard,
-} from 'react-native';
-import { Colors, Fonts } from '../../constants/theme';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { useState, useMemo, useCallback } from 'react';
-import CustomButton from '../../components/CustomButton';
+import Checkbox from 'expo-checkbox';
+import { useRouter } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
+import {
+    Alert,
+    Keyboard,
+    StyleSheet, Text, TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View,
+} from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import register from'./register';
+import CountryDropdown from '../../components/CountryDropdown';
+import CustomButton from '../../components/CustomButton';
+import { Colors, Fonts } from '../../constants/theme';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 export default function LoginScreen() {
     const [toggleSecureEntry, setToggleSecureEntry] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [remember, setRemember] = useState(true);
     const router = useRouter();
 
-    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [email, setEmail] = useState('');
-    const [phone, setPhone] = useState('');
+    const countries = [
+        { code: '+994', label: 'AZ' },
+        { code: '+90', label: 'TR' },
+        { code: '+995', label: 'GE' },
+        { code: '+7', label: 'RU' },
+        { code: '+1', label: 'US' },
+    ];
+    // const [selectedCountry, setSelectedCountry] = useState(countries[0]);
+
+    // const [phoneNumber, setPhoneNumber] = useState('');
+
+    const [identifier, setIdentifier] = useState(''); // email və ya phone
+
 
     const isStrongPassword = useCallback((value) => value.trim().length >= 6, []);
-    const [touched, setTouched] = useState({ username: false, password: false, email: false, phone: false });
+    // const [touched, setTouched] = useState({ password: false, phone: false });
+    const [touched, setTouched] = useState({ password: false, identifier: false });
 
-    const usernameError = useMemo(() => {
-        if (!touched.username) return '';
-        if (!username.trim()) return 'Tam adınızı daxil edin';
-        return '';
-    }, [username, touched.username]);
 
     const passwordError = useMemo(() => {
         if (!touched.password) return '';
@@ -42,54 +50,101 @@ export default function LoginScreen() {
         return '';
     }, [password, isStrongPassword, touched.password]);
 
-    const emailError = useMemo(() => {
-        if (!touched.email) return '';
-        if (!email.trim()) return 'Email daxil edin';
-        if (!/\S+@\S+\.\S+/.test(email)) return 'Düzgün email formatı daxil edin';
-        return '';
-    }, [email, touched.email]);
+    // const phoneError = useMemo(() => {
+    //     if (!touched.phone) return '';
+    //     const cc = selectedCountry.code;
+    //     if (cc === '+994') {
+    //         const validLine = /^\d{9}$/.test(phoneNumber);
+    //         if (!validLine) return 'Telefon nömrəsi düzgün formatda deyil (9 rəqəm)';
+    //         return '';
+    //     }
+    //     const validGeneric = /^\d{7,12}$/.test(phoneNumber);
+    //     if (!validGeneric) return 'Telefon nömrəsi düzgün formatda deyil';
+    //     return '';
+    // }, [phoneNumber, selectedCountry.code, touched.phone]);
 
-    const phoneError = useMemo(() => {
-        if (!touched.phone) return '';
-        if (!phone.trim()) return 'Telefon nömrəsini daxil edin';
-        if (!/^\+994\d{9}$/.test(phone)) return 'Telefon nömrəsi düzgün formatda deyil';
+    const identifierError = useMemo(() => {
+        if (!touched.identifier) return '';
+
+        const isEmail = identifier.includes('@');
+        if (isEmail) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(identifier)) return 'Email düzgün formatda deyil';
+            return '';
+        }
+
+        const validPhone = /^\d{7,12}$/.test(identifier);
+        if (!validPhone) return 'Telefon nömrəsi düzgün formatda deyil';
         return '';
-    }, [phone, touched.phone]);
+    }, [identifier, touched.identifier]);
+
+
+
+    // const isFormValid = useMemo(() => {
+    //     const cc = selectedCountry.code;
+    //     const okLine = cc === '+994' ? phoneNumber.length === 9 : phoneNumber.length >= 7;
+    //     return !passwordError && !phoneError && okLine && !!password;
+    // }, [passwordError, phoneError, phoneNumber, password, selectedCountry.code]);
 
     const isFormValid = useMemo(() => {
-        return !usernameError && !passwordError && !emailError && !phoneError;
-    }, [usernameError, passwordError, emailError, phoneError]);
+        return !passwordError && !identifierError && !!identifier && !!password;
+    }, [passwordError, identifierError, identifier, password]);
 
-    const onBlurUserName = useCallback(() => setTouched((s) => ({ ...s, username: true })), []);
+
+
     const onBlurPassword = useCallback(() => setTouched((s) => ({ ...s, password: true })), []);
-    const onBlurEmail = useCallback(() => setTouched((s) => ({ ...s, email: true })), []);
-    const onBlurPhone = useCallback(() => setTouched((s) => ({ ...s, phone: true })), []);
+    // const onBlurPhone = useCallback(() => setTouched((s) => ({ ...s, phone: true })), []);
 
-    const handleRegister = async () => {
-        setTouched({ username: true, password: true, email: true, phone: true });
+    const onBlurIdentifier = useCallback(() => setTouched((s) => ({ ...s, identifier: true })), []);
 
-        if (!isFormValid) {
-            Alert.alert('Xəta', 'Zəhmət olmasa, formu düzgün doldurun.');
+
+
+    const handleLogin = async () => {
+    setTouched({ password: true, identifier: true });
+
+    if (!isFormValid) {
+        Alert.alert("Xəta", "Zəhmət olmasa, formu düzgün doldurun.");
+        return;
+    }
+
+    try {
+        setIsSubmitting(true);
+
+        const savedUser = await AsyncStorage.getItem("user");
+
+        if (!savedUser) {
+            Alert.alert("Xəta", "İstifadəçi tapılmadı. Qeydiyyatdan keçin.");
             return;
         }
 
-        try {
-            setIsSubmitting(true);
-            await new Promise((resolve) => setTimeout(resolve, 1500));
-            router.replace('./register');
-        } catch (error) {
-            Alert.alert('Xəta', 'Daxil olmaq alınmadı.');
-        } finally {
-            setIsSubmitting(false);
+        const user = JSON.parse(savedUser);
+
+        // identifier ya email, ya phone ola bilər
+        const matchesEmail = user.email === identifier;
+        const matchesPhone = user.phone === identifier;
+
+        if ((matchesEmail || matchesPhone) && user.password === password) {
+            await AsyncStorage.setItem("loggedIn", "true"); 
+            router.replace("/(tabs)/home/home");
+        } else {
+            Alert.alert("Xəta", "Email/Telefon və ya şifrə yanlışdır.");
         }
-    };
+    } catch (error) {
+        Alert.alert("Xəta", "Daxil olmaq alınmadı.");
+    } finally {
+        setIsSubmitting(false);
+    }
+};
+
+
+    const goToRegister = () => router.replace('/(auth)/register');
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <KeyboardAwareScrollView
                 contentContainerStyle={{ flexGrow: 1, padding: 20 }}
                 keyboardShouldPersistTaps="handled"
-                enableOnAndroid={true}   
+                enableOnAndroid={true}
                 extraScrollHeight={20}
             >
                 <View style={styles.container}>
@@ -98,27 +153,49 @@ export default function LoginScreen() {
                     </View>
 
                     <View style={styles.context}>
-
-
-
                         {/* Phone */}
-                        <View style={styles.inputContainer}>
+                        {/* <View style={styles.inputContainer}>
                             <Text style={styles.label}>Telefon nömrə</Text>
                             <View style={styles.inputWrapper}>
+                                <CountryDropdown
+                                    countries={countries}
+                                    selectedCountry={selectedCountry}
+                                    onSelect={setSelectedCountry}
+                                />
+
                                 <TextInput
-                                    placeholder="+994 XX XXX XX XX"
+                                    placeholder={selectedCountry.code === '+994' ? '501234567' : '7-12 rəqəm'}
                                     placeholderTextColor={Colors.placeholder}
-                                    keyboardType="phone-pad"
-                                    style={styles.input}
-                                    value={phone}
-                                    onChangeText={setPhone}
+                                    keyboardType="number-pad"
+                                    style={[styles.input, { flex: 1 }]}
+                                    value={phoneNumber}
+                                    onChangeText={(text) => {
+                                        const max = selectedCountry.code === '+994' ? 9 : 12;
+                                        const digits = text.replace(/\D/g, '').slice(0, max);
+                                        setPhoneNumber(digits);
+                                    }}
                                     onBlur={onBlurPhone}
+                                    maxLength={selectedCountry.code === '+994' ? 9 : 12}
                                 />
                             </View>
                             {phoneError ? <Text style={styles.errorText}>{phoneError}</Text> : null}
+                        </View> */}
+
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Email və ya Telefon</Text>
+                            <TextInput
+                                placeholder="Email və ya telefon nömrə daxil edin"
+                                placeholderTextColor={Colors.placeholder}
+                                keyboardType="default"
+                                style={[styles.input]}
+                                value={identifier}
+                                onChangeText={setIdentifier}
+                                onBlur={onBlurIdentifier}
+                            />
+                            {identifierError ? <Text style={styles.errorText}>{identifierError}</Text> : null}
                         </View>
 
-                         {/* Password */}
+                        {/* Password */}
                         <View style={styles.inputContainer}>
                             <Text style={styles.label}>Şifrə</Text>
                             <View style={styles.inputWrapper}>
@@ -145,26 +222,44 @@ export default function LoginScreen() {
                             </View>
                             {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
                         </View>
+
+                        {/* Remember me */}
+                        {/* <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
+                            <Checkbox
+                                value={remember}
+                                onValueChange={setRemember}
+                                color={remember ? Colors.primary : undefined}
+                            />
+                            <Text style={{ marginLeft: 8, color: Colors.textSecondary, fontFamily: Fonts.Poppins_Regular }}>
+                                Məni xatırla
+                            </Text>
+                        </View> */}
                     </View>
 
-
                     {/* Buttons */}
-                    <View style={{ marginTop: 40 }}>
+                    <View style={{ marginTop: 24 }}>
                         <CustomButton
                             title="Daxil olmaq"
-                            // onPress={handleLogin}
+                            onPress={handleLogin}
                             loading={isSubmitting}
                             disabled={!isFormValid || isSubmitting}
                         />
                     </View>
 
-                    <View style={{ marginTop: 20 }}>
-                        <CustomButton
-                            title="Qeydiyyatdan keç"
-                            onPress={handleRegister}
-                            color={Colors.primary}
-                            backgroundColor={Colors.inputBackground}
-                        />
+                    <View style={styles.registerContainer}>
+                        <Text style={styles.registerText}>
+                            Hesabınız yoxdur?
+                        </Text>
+                        <TouchableOpacity
+                            onPress={goToRegister}
+                            style={{ marginLeft: 6 }}
+                        >
+                            <Text
+                                style={{ color: Colors.primary, fontFamily: Fonts.Poppins_SemiBold, fontSize: 17 }}>
+                                Qeydiyyatdan keç
+                            </Text>
+                        </TouchableOpacity>
+
                     </View>
                 </View>
 
@@ -176,7 +271,6 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        // padding: 20,
     },
     header: {
         marginTop: 70,
@@ -204,8 +298,12 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: Colors.border,
         borderRadius: 10,
-        paddingHorizontal: 12,
-        backgroundColor: "#ffffff",
+        backgroundColor: '#ffffff',
+    },
+    phonePrefix: {
+        fontFamily: Fonts.Poppins_Regular,
+        color: Colors.textPrimary,
+        marginRight: 6,
     },
     input: {
         flex: 1,
@@ -213,6 +311,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: Colors.textPrimary,
         fontFamily: Fonts.Poppins_Regular,
+        paddingHorizontal: 12,
     },
     iconWrapper: {
         padding: 6,
@@ -223,4 +322,16 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontFamily: Fonts.Poppins_Regular,
     },
+    registerContainer: {
+        marginTop: 16,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    registerText: {
+        color: Colors.textSecondary,
+        fontFamily: Fonts.Poppins_Regular,
+        fontSize: 15,
+    },
 });
+
