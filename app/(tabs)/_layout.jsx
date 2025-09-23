@@ -31,7 +31,7 @@ export default function TabLayout() {
                 },
             }}>
             <Tabs.Screen
-                name="home"
+                name="home/index"
                 options={{
                     title: 'Ana',
                     tabBarIcon: ({ color, size }) => (
@@ -40,7 +40,7 @@ export default function TabLayout() {
                 }}
             />
             <Tabs.Screen
-                name="wallets"
+                name="wallets/index"
                 options={{
                     title: 'Balans',
                     tabBarIcon: ({ color, size }) => (
@@ -49,7 +49,7 @@ export default function TabLayout() {
                 }}
             />
             <Tabs.Screen
-                name="qr"
+                name="qr/index"
                 options={{
                     title: 'QR',
                     tabBarIcon: ({ color, size, focused }) => (
@@ -67,7 +67,7 @@ export default function TabLayout() {
                 }}
             />
             <Tabs.Screen
-                name="profile"
+                name="profile/index"
                 options={{
                     title: 'Profil',
                     tabBarIcon: ({ color, size }) => (
@@ -76,7 +76,7 @@ export default function TabLayout() {
                 }}
             />
             <Tabs.Screen
-                name="community"
+                name="community/index"
                 options={{
                     title: 'Cəmiyyət',
                     tabBarIcon: ({ color, size }) => (
