@@ -16,7 +16,6 @@ export const Colors = {
 };
 
 export const Fonts = {
-  // Use the font family name registered via useFonts in app/_layout.jsx
   MPlusRegular: "MPlusRegular",
   Poppins_Regular: "PoppinsRegular",
   Poppins_SemiBold: "PoppinsSemiBold",
