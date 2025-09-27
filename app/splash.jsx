@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -39,7 +40,6 @@ export default function SplashScreen() {
                 </View>
             </View>
             <Text style={styles.title}>KARTO</Text>
-            <Text style={styles.subtitle}>Mobil Ödəniş Platforması</Text>
             <View style={styles.loadingContainer}>
                 <View style={styles.loadingDot} />
                 <View style={styles.loadingDot} />
@@ -88,13 +88,6 @@ const styles = StyleSheet.create({
         fontFamily: Fonts.MPlusRegular,
         marginBottom: 8,
         letterSpacing: 2,
-    },
-    subtitle: {
-        fontSize: 16,
-        color: Colors.textSecondary,
-        fontFamily: Fonts.Poppins_Regular,
-        marginBottom: 60,
-        textAlign: 'center',
     },
     loadingContainer: {
         flexDirection: 'row',

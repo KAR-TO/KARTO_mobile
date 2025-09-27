@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#FFFFFF',
-    fontFamily: Fonts.Poppins_Regular,
+    fontFamily: Fonts.Poppins_SemiBold,
     fontSize: 18,
   },
 })

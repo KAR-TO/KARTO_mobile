@@ -349,6 +349,7 @@ const styles = StyleSheet.create({
     },
     inputContainer: {
         marginBottom: 15,
+        overflow:'visible',
     },
     label: {
         fontSize: 13,
