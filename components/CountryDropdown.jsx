@@ -1,6 +1,8 @@
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
+    Modal,
+    Platform,
     ScrollView,
     StyleSheet,
     Text,
@@ -11,8 +13,24 @@ import { Colors, Fonts } from '../constants/theme';
 
 const CountryDropdown = ({ countries, selectedCountry, onSelect }) => {
     const [isVisible, setIsVisible] = useState(false);
+    const [dropdownLayout, setDropdownLayout] = useState({ x: 0, y: 0, width: 0, height: 0 });
+    const selectorRef = useRef(null);
 
-    const toggleDropdown = () => setIsVisible(!isVisible);
+    const toggleDropdown = () => {
+        if (!isVisible && selectorRef.current) {
+            selectorRef.current.measure((x, y, width, height, pageX, pageY) => {
+                setDropdownLayout({
+                    x: pageX,
+                    y: pageY,
+                    width,
+                    height
+                });
+                setIsVisible(true);
+            });
+        } else {
+            setIsVisible(false);
+        }
+    };
 
     const selectCountry = (country) => {
         onSelect(country);
@@ -40,36 +58,60 @@ const CountryDropdown = ({ countries, selectedCountry, onSelect }) => {
     );
 
     return (
-        <View style={styles.container}>
-            <TouchableOpacity onPress={toggleDropdown} style={styles.countrySelector}>
-                <Text style={styles.countryLabel}>{selectedCountry.label}</Text>
-                <Text style={styles.phonePrefix}>{selectedCountry.code}</Text>
-                <AntDesign 
-                    name={isVisible ? "up" : "down"} 
-                    size={12} 
-                    color={Colors.primary} 
-                />
-            </TouchableOpacity>
+        <>
+            <View style={styles.container}>
+                <TouchableOpacity
+                    ref={selectorRef}
+                    onPress={toggleDropdown}
+                    style={styles.countrySelector}
+                >
+                    <Text style={styles.countryLabel}>{selectedCountry.label}</Text>
+                    <Text style={styles.phonePrefix}>{selectedCountry.code}</Text>
+                    <AntDesign
+                        name={isVisible ? "up" : "down"}
+                        size={12}
+                        color={Colors.primary}
+                    />
+                </TouchableOpacity>
+            </View>
 
-            {isVisible && (
-                <View style={styles.dropdownContainer}>
-                    <ScrollView 
-                        style={styles.countryList}
-                        showsVerticalScrollIndicator={false}
-                        nestedScrollEnabled={true}
+            <Modal
+                visible={isVisible}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setIsVisible(false)}
+            >
+                <TouchableOpacity
+                    style={styles.modalOverlay}
+                    activeOpacity={1}
+                    onPress={() => setIsVisible(false)}
+                >
+                    <View
+                        style={[
+                            styles.dropdownContainer,
+                            {
+                                top: dropdownLayout.y + 5,
+                                left: dropdownLayout.x - 12,
+                            }
+                        ]}
                     >
-                        {countries.map((item, index) => renderCountryItem(item, index))}
-                    </ScrollView>
-                </View>
-            )}
-        </View>
+                        <ScrollView
+                            style={styles.countryList}
+                            showsVerticalScrollIndicator={false}
+                            nestedScrollEnabled={true}
+                        >
+                            {countries.map((item, index) => renderCountryItem(item, index))}
+                        </ScrollView>
+                    </View>
+                </TouchableOpacity>
+            </Modal>
+        </>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
         position: 'relative',
-        zIndex: 1000,
     },
     countrySelector: {
         flexDirection: 'row',
@@ -92,25 +134,33 @@ const styles = StyleSheet.create({
         fontSize: 11,
         marginRight: 4,
     },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'transparent',
+    },
     dropdownContainer: {
         position: 'absolute',
-        top: 35,
-        left: -12,
         width: 120,
+        paddingTop: 5,
         backgroundColor: '#ffffff',
         borderRadius: 8,
         borderWidth: 1,
         borderColor: Colors.border,
         maxHeight: 150,
-        elevation: 10,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        zIndex: 1001,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: {
+                    width: 0,
+                    height: 2,
+                },
+                shadowOpacity: 0.25,
+                shadowRadius: 3.84,
+            },
+            android: {
+                elevation: 10,
+            },
+        }),
     },
     countryList: {
         borderRadius: 8,
