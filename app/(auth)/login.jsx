@@ -125,7 +125,7 @@ export default function LoginScreen() {
                                     style={styles.inputIcon}
                                 />
                                 <TextInput
-                                    placeholder="Email və ya telefon nömrə daxil edin"
+                                    placeholder="Email və ya nömrə daxil edin"
                                     placeholderTextColor={Colors.placeholder}
                                     keyboardType="default"
                                     style={styles.input}
