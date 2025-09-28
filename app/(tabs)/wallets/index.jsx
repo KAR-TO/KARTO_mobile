@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import {
     Alert,
     Image,
+    Platform,
     ScrollView,
     StyleSheet,
     Text,
@@ -31,29 +32,26 @@ export default function CardsScreen() {
     const cards = [
         {
             id: 1,
-            title: 'Premium Geyim Kartı',
-            price: 50,
+            title: 'Adidas',
+            price: "50-100",
             category: 'clothing',
             image: require('../../../assets/images/adidas.png'),
-            description: 'Adidas və Puma brendləri üçün',
             backgroundColor: '#F5F5F5'
         },
         {
             id: 2,
-            title: 'Kitab Həvəskarları',
-            price: 25,
+            title: 'Alinino',
+            price: "25-50",
             category: 'books',
             image: require('../../../assets/images/alinino.png'),
-            description: 'Alinino kitab mağazası',
             backgroundColor: '#E8F5E8'
         },
         {
             id: 3,
-            title: 'Elektronika Pro',
+            title: 'Smartfon',
             price: 100,
             category: 'electronics',
             logo: '📱',
-            description: 'Smartfon və aksessuarlar',
             backgroundColor: '#E3F2FD'
         },
         {
@@ -62,7 +60,6 @@ export default function CardsScreen() {
             price: 75,
             category: 'beauty',
             logo: '💄',
-            description: 'Makiyaj və baxım məhsulları',
             backgroundColor: '#F3E5F5'
         },
         {
@@ -71,37 +68,34 @@ export default function CardsScreen() {
             price: 40,
             category: 'entertainment',
             logo: '🎮',
-            description: 'Oyun və əyləncə',
             backgroundColor: '#FFF3E0'
         },
         {
             id: 6,
-            title: 'İdman Geyim',
+            title: 'Puma',
             price: 60,
             category: 'clothing',
             image: require('../../../assets/images/puma.png'),
-            description: 'Puma idman kolleksiyası',
             backgroundColor: '#F5F5F5'
         }
     ];
 
     const filteredCards = useMemo(() => {
         let filtered = cards;
-        
+
         // Filter by category
         if (selectedCategory !== 'Hamısı') {
             const categoryKey = categories.find(cat => cat.name === selectedCategory)?.id;
             filtered = filtered.filter(card => card.category === categoryKey);
         }
-        
+
         // Filter by search text
         if (searchText) {
-            filtered = filtered.filter(card => 
-                card.title.toLowerCase().includes(searchText.toLowerCase()) ||
-                card.description.toLowerCase().includes(searchText.toLowerCase())
+            filtered = filtered.filter(card =>
+                card.title.toLowerCase().includes(searchText.toLowerCase())
             );
         }
-        
+
         return filtered;
     }, [searchText, selectedCategory]);
 
@@ -129,7 +123,9 @@ export default function CardsScreen() {
 
     const renderCard = ({ item }) => (
         <View style={[styles.card, { backgroundColor: item.backgroundColor }]}>
-            <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>{item.title}</Text>
+
+            <View style={styles.cardImageWrapper}>
                 {item.image ? (
                     <Image
                         source={item.image}
@@ -139,23 +135,28 @@ export default function CardsScreen() {
                 ) : (
                     <Text style={styles.cardLogo}>{item.logo}</Text>
                 )}
+            </View>
+
+            <View style={styles.cardFooter}>
+                <Text style={styles.cardPrice}>{item.price} ₼</Text>
                 {purchasedCards.includes(item.id) && (
-                    <Ionicons name="checkmark-circle" size={20} color={Colors.success} />
+                    <Ionicons
+                        name="checkmark-circle"
+                        size={20}
+                        color={Colors.success}
+                        style={{ marginLeft: 6 }}
+                    />
                 )}
             </View>
-            
-            <View style={styles.cardContent}>
-                <Text style={styles.cardTitle}>{item.title}</Text>
-                <Text style={styles.cardDescription}>{item.description}</Text>
-                <Text style={styles.cardPrice}>{item.price} ₼</Text>
-                
-                <CustomButton
-                    title={purchasedCards.includes(item.id) ? "Satın Alınıb" : "Satın Al"}
-                    onPress={() => handleBuyCard(item)}
-                    disabled={purchasedCards.includes(item.id)}
-                    backgroundColor={purchasedCards.includes(item.id) ? Colors.success : Colors.primary}
-                />
-            </View>
+
+            <CustomButton
+                title={purchasedCards.includes(item.id) ? "Satın Alınıb" : "Satın Al"}
+                onPress={() => handleBuyCard(item)}
+                disabled={purchasedCards.includes(item.id)}
+                backgroundColor={
+                    purchasedCards.includes(item.id) ? Colors.success : Colors.primary
+                }
+            />
         </View>
     );
 
@@ -167,21 +168,26 @@ export default function CardsScreen() {
                 <Text style={styles.subtitle}>Hədiyyə kartlarını kəşf edin</Text>
             </View>
 
-            <ScrollView 
+            <ScrollView
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: 100 }}
+                contentContainerStyle={{ paddingBottom: 80 }}
             >
                 {/* Balance Card */}
-                <View style={styles.balanceCard}>
+                <View style={[styles.balanceCard, styles.horizontalPadding]}>
                     <Text style={styles.balanceLabel}>Cəmi Balans</Text>
-                    <Text style={styles.balanceAmount}>{totalBalance.toFixed(2)} ₼</Text>
-                    <Text style={styles.purchasedCount}>
-                        {purchasedCards.length} kart satın alınıb
-                    </Text>
+                    <View style={styles.balanceFooter}>
+                        <View style={styles.purchasedCountWrapper}>
+                            <Text style={styles.purchasedCount}>
+                                {purchasedCards.length} kart satın alınıb
+                            </Text>
+                        </View>
+                        <Text style={styles.balanceAmount}>{totalBalance.toFixed(2)} ₼</Text>
+                    </View>
+
                 </View>
 
                 {/* Search Bar */}
-                <View style={styles.searchContainer}>
+                <View style={[styles.searchContainer, styles.horizontalPadding]}>
                     <View style={styles.searchBar}>
                         <Ionicons name="search" size={22} color={Colors.textSecondary} />
                         <TextInput
@@ -202,14 +208,16 @@ export default function CardsScreen() {
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     style={styles.categoriesContainer}
-                    contentContainerStyle={styles.categoriesContent}
+                    contentContainerStyle={styles.categoriesContentContainer}
                 >
-                    {categories.map((category) => (
+                    {categories.map((category, index) => (
                         <TouchableOpacity
                             key={category.id}
                             style={[
                                 styles.categoryButton,
-                                selectedCategory === category.name && styles.categoryButtonActive
+                                selectedCategory === category.name && styles.categoryButtonActive,
+                                index === 0 && { marginLeft: 0 },
+                                index === categories.length - 1 && { marginRight: 0 }
                             ]}
                             onPress={() => handleCategoryPress(category)}
                         >
@@ -229,8 +237,12 @@ export default function CardsScreen() {
                 </ScrollView>
 
                 {/* Cards List */}
-                <View style={styles.cardsContainer}>
-                    {filteredCards.map((item) => renderCard({ item }))}
+                <View style={[styles.cardsContainer, styles.horizontalPadding]}>
+                    {filteredCards.map((item) =>
+                        <View key={item.id}>
+                            {renderCard({ item })}
+                        </View>
+                    )}
                 </View>
             </ScrollView>
         </View>
@@ -243,16 +255,15 @@ const styles = StyleSheet.create({
         backgroundColor: '#f8f9fa',
     },
     header: {
-        paddingTop: 60,
-        paddingHorizontal: 20,
-        paddingBottom: 30,
+        paddingTop: Platform.OS === 'ios' ? 0 : 20,
+        paddingBottom: 10,
+        paddingHorizontal: 12,
         backgroundColor: 'linear-gradient(135deg, #77BFA3 0%, #5EA88A 100%)',
     },
     title: {
         fontSize: 32,
         fontFamily: Fonts.Poppins_SemiBold,
-        color: '#fff',
-        marginBottom: 8,
+        color: Colors.primary,
         textShadowColor: 'rgba(0,0,0,0.1)',
         textShadowOffset: { width: 0, height: 1 },
         textShadowRadius: 2,
@@ -260,16 +271,13 @@ const styles = StyleSheet.create({
     subtitle: {
         fontSize: 16,
         fontFamily: Fonts.Poppins_Regular,
-        color: 'rgba(255,255,255,0.9)',
+        color: Colors.primary,
     },
     balanceCard: {
         backgroundColor: '#fff',
         borderRadius: 20,
-        padding: 24,
-        marginHorizontal: 20,
-        marginTop: -20,
+        padding: 10,
         marginBottom: 24,
-        alignItems: 'center',
         shadowColor: '#77BFA3',
         shadowOffset: {
             width: 0,
@@ -280,38 +288,47 @@ const styles = StyleSheet.create({
         elevation: 8,
         borderWidth: 1,
         borderColor: 'rgba(119, 191, 163, 0.1)',
+        marginHorizontal: 10,
     },
     balanceLabel: {
-        fontSize: 14,
+        fontSize: 10,
         fontFamily: Fonts.Poppins_Regular,
         color: Colors.textSecondary,
-        marginBottom: 8,
-        letterSpacing: 0.5,
         textTransform: 'uppercase',
     },
+    balanceFooter: {
+        alignItems: 'center',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
     balanceAmount: {
-        fontSize: 36,
+        fontSize: 28,
         fontFamily: Fonts.Poppins_SemiBold,
         color: Colors.primary,
-        marginBottom: 8,
-        textShadowColor: 'rgba(119, 191, 163, 0.2)',
+        textShadowColor: 'rgba(18, 18, 18, 0.2)',
         textShadowOffset: { width: 0, height: 2 },
         textShadowRadius: 4,
+    },
+    purchasedCountWrapper: {
+        backgroundColor: 'rgba(255, 255, 255, 1)',
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        shadowColor: '#00603bf6',
+        shadowOffset: { width: 0, height: 12 }, 
+        shadowOpacity: 0.7,
+        shadowRadius: 20,
+        elevation: 12,
     },
     purchasedCount: {
         fontSize: 14,
         fontFamily: Fonts.Poppins_Regular,
-        color: Colors.success,
-        backgroundColor: 'rgba(153, 209, 164, 0.1)',
-        paddingHorizontal: 12,
-        paddingVertical: 4,
-        borderRadius: 12,
+        color: Colors.primary,
+        textAlign: 'center',
     },
     searchContainer: {
         flexDirection: 'row',
-        marginHorizontal: 20,
         marginBottom: 20,
-        gap: 12,
+        gap: 10,
     },
     searchBar: {
         flex: 1,
@@ -358,30 +375,34 @@ const styles = StyleSheet.create({
         borderColor: 'rgba(0,0,0,0.05)',
     },
     categoriesContainer: {
-        marginBottom: 24,
+        marginBottom: 20,
+        paddingBottom: 5,
     },
-    categoriesContent: {
-        paddingHorizontal: 20,
+    categoriesContentContainer: {
+        paddingHorizontal: 12,
+    },
+    horizontalPadding: {
+        paddingHorizontal: 12,
     },
     categoryButton: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#fff',
         borderRadius: 25,
-        paddingHorizontal: 18,
-        paddingVertical: 12,
+        paddingHorizontal: 15,
+        paddingVertical: 10,
         borderWidth: 1,
         borderColor: 'rgba(0,0,0,0.08)',
-        gap: 8,
+        gap: 5,
         marginRight: 10,
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
-            height: 2,
+            height: 6,
         },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 2,
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+        elevation: 5,
     },
     categoryButtonActive: {
         backgroundColor: Colors.primary,
@@ -389,11 +410,11 @@ const styles = StyleSheet.create({
         shadowColor: Colors.primary,
         shadowOffset: {
             width: 0,
-            height: 4,
+            height: 6,
         },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 6,
+        shadowOpacity: 0.25,
+        shadowRadius: 10,
+        elevation: 7,
     },
     categoryText: {
         fontSize: 14,
@@ -403,73 +424,48 @@ const styles = StyleSheet.create({
     categoryTextActive: {
         color: '#fff',
     },
-    cardsContainer: {
-        paddingHorizontal: 20,
-        paddingBottom: 20,
-    },
-    cardRow: {
-        justifyContent: 'space-between',
-        marginBottom: 16,
-    },
     card: {
         backgroundColor: '#fff',
         borderRadius: 20,
-        padding: 20,
-        marginBottom: 16,
+        padding: 16,
+        marginBottom: 20,
         shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 4,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 12,
-        elevation: 6,
-        minHeight: 240,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 10,
+        elevation: 4,
+
         borderWidth: 1,
-        borderColor: 'rgba(0,0,0,0.03)',
-    },
-    cardHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: 16,
-    },
-    cardImage: {
-        width: 48,
-        height: 48,
-        borderRadius: 8,
-    },
-    cardLogo: {
-        fontSize: 36,
-        textShadowColor: 'rgba(0,0,0,0.1)',
-        textShadowOffset: { width: 0, height: 1 },
-        textShadowRadius: 2,
-    },
-    cardContent: {
-        flex: 1,
-        justifyContent: 'space-between',
+        borderColor: 'rgba(0,0,0,0.05)',
     },
     cardTitle: {
         fontSize: 18,
         fontFamily: Fonts.Poppins_SemiBold,
         color: Colors.textPrimary,
-        marginBottom: 8,
-        lineHeight: 24,
-    },
-    cardDescription: {
-        fontSize: 13,
-        fontFamily: Fonts.Poppins_Regular,
-        color: Colors.textSecondary,
-        marginBottom: 16,
-        lineHeight: 18,
+        textAlign: 'center',
     },
     cardPrice: {
         fontSize: 20,
         fontFamily: Fonts.Poppins_SemiBold,
         color: Colors.primary,
-        marginBottom: 16,
-        textShadowColor: 'rgba(119, 191, 163, 0.2)',
-        textShadowOffset: { width: 0, height: 1 },
-        textShadowRadius: 2,
+    },
+    cardImageWrapper: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 12,
+    },
+    cardImage: {
+        width: 150,
+        height: 90,
+    },
+    cardLogo: {
+        fontSize: 36,
+    },
+    cardFooter: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        marginBottom: 5,
+        marginTop: 6,
     },
 });

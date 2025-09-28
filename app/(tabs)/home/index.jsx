@@ -2,13 +2,12 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Colors, Fonts } from '../../../constants/theme';
 import CustomButton from '../../../components/CustomButton';
 
 export default function HomeScreen() {
     const router = useRouter();
-    const [user, setUser] = useState(null);
     const [searchText, setSearchText] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('Geyim mağazaları');
 
@@ -18,49 +17,6 @@ export default function HomeScreen() {
         { id: 'markets', name: 'Market', icon: 'basket-outline', active: false },
         { id: 'beauty', name: 'Gözəllik', icon: 'sparkles-outline', active: false },
         { id: 'entertainment', name: 'Əyləncə', icon: 'game-controller-outline', active: false },
-    ];
-
-    const bestOffers = [
-        {
-            id: 1,
-            brand: 'Alinino',
-            category: 'Kitablar',
-            price: '50-100 ₼',
-            image: require('../../../assets/images/alinino.png'),
-            description: 'Kitab mağazası',
-            color: '#E8F5E8',
-            accentColor: '#4CAF50'
-        },
-        {
-            id: 2,
-            brand: 'Adidas',
-            category: 'Geyim',
-            price: '50-100 ₼',
-            image: require('../../../assets/images/adidas.png'),
-            description: 'İdman geyimləri',
-            color: '#F5F5F5',
-            accentColor: '#000000'
-        },
-        {
-            id: 3,
-            brand: 'Puma',
-            category: 'Geyim',
-            price: '50-100 ₼',
-            image: require('../../../assets/images/puma.png'),
-            description: 'İdman geyimləri',
-            color: '#F5F5F5',
-            accentColor: '#000000'
-        },
-        {
-            id: 4,
-            brand: 'Olivia',
-            category: 'Gözəllik',
-            price: '50-100 ₼',
-            logo: '💄',
-            description: 'Gözəllik və qulluq',
-            color: '#F5F5F5',
-            accentColor: '#9C27B0'
-        }
     ];
 
     useEffect(() => {
@@ -75,10 +31,6 @@ export default function HomeScreen() {
                 return;
             }
 
-            const userData = await AsyncStorage.getItem('user');
-            if (userData) {
-                setUser(JSON.parse(userData));
-            }
         } catch (error) {
             console.log('Auth check error:', error);
             router.replace('/(auth)/login');
@@ -131,10 +83,6 @@ export default function HomeScreen() {
             contentContainerStyle={styles.categoriesContent}
         >
             <View style={styles.container}>
-                <View style={styles.header}>
-                    <Text style={styles.welcomeText}>Salam, {user?.username || 'İstifadəçi'}!</Text>
-                </View>
-
                 <View style={styles.searchContainer}>
                     <View style={styles.searchBar}>
                         <Ionicons name="search" size={20} color={Colors.textSecondary} />
@@ -186,7 +134,7 @@ export default function HomeScreen() {
                                 style={styles.kartoHeaderText}
                                 resizeMode="contain"
                             />
-                         </View>
+                        </View>
 
                         <View style={styles.kartoArtwork}>
                             <Image
@@ -202,10 +150,10 @@ export default function HomeScreen() {
                             Artıq hədiyyə seçməkdə tərəddüdə ehtiyac yoxdur. Kartokart ile sevdiklerin ne istədiyini özləri seçir. Onlarla ferqli onlayn mağaza, xidmet ve brend – bir kartın içində. İster texnologiya, ister geyim, istərsə de əyləncə – seçim tamamilə onlara aiddir. Bu sadece bir kart deyil, məhdudiyyətsiz imkanlar ve şəxsi seçim azadlığıdır. Hədiyyənin necə olacağını sen yox, alan özü müəyyən edir.
                         </Text>
 
-                        <CustomButton title='"Karto" al' onPress={() => {}} />
+                        <CustomButton title='"Karto" al' onPress={() => { }} />
                     </View>
                 </View>
-{/* 
+                {/* 
                 <View style={styles.offersSection}>
                     <View style={styles.offersHeader}>
                         <Ionicons name="star" size={20} color={Colors.warning} />
@@ -286,10 +234,10 @@ export default function HomeScreen() {
                     </View>
                 </View> */}
 
-                <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                {/* <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
                     <Ionicons name="log-out-outline" size={20} color="#fff" />
                     <Text style={styles.logoutText}>Çıxış</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </View>
         </ScrollView>
 
@@ -298,24 +246,14 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
     categoriesContent: {
-        // paddingHorizontal: 20,
-        // gap: 12,
-        padding: 20,
+        paddingBottom: 80,
     },
     container: {
         flex: 1,
         backgroundColor: '#f8f9fa',
         // paddingBottom: 100,
-    },
-    header: {
-        paddingTop: 30,
-        // paddingHorizontal: 20,
-        paddingBottom: 10,
-    },
-    welcomeText: {
-        fontSize: 24,
-        fontFamily: Fonts.Poppins_SemiBold,
-        color: Colors.textPrimary,
+        padding: 15,
+        paddingTop: Platform.OS === 'android' ? 40 : 10,
     },
     searchContainer: {
         flexDirection: 'row',
@@ -377,7 +315,7 @@ const styles = StyleSheet.create({
     kartoCard: {
         backgroundColor: '#fff',
         borderRadius: 20,
-        padding: 18,
+        padding: 10,
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
@@ -386,24 +324,19 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 8,
         elevation: 8,
+        paddingTop:0,
     },
     kartoHeader: {
         alignItems: 'center',
         // marginBottom: 10,
     },
     kartoHeaderText: {
-        width: 250,
+        width: 230,
         height: 50,
-    },
-    kartoTitle: {
-        fontSize: 28,
-        fontFamily: Fonts.MPlusRegular,
-        color: Colors.primary,
-        fontWeight: 'bold',
     },
     kartoArtwork: {
         alignItems: 'center',
-        marginBottom: 20,
+        marginBottom: 10,
     },
     kartoImage: {
         width: "100%",
@@ -414,7 +347,7 @@ const styles = StyleSheet.create({
         fontFamily: Fonts.Poppins_SemiBold,
         color: Colors.textPrimary,
         textAlign: 'flex-start',
-        marginBottom: 16,
+        marginBottom: 5,
     },
     kartoDescription: {
         fontSize: 12,
@@ -422,7 +355,7 @@ const styles = StyleSheet.create({
         color: Colors.textSecondary,
         lineHeight: 20,
         textAlign: 'flex-start',
-        marginBottom: 24,
+        marginBottom: 20,
     },
     kartoButton: {
         backgroundColor: Colors.primary,
