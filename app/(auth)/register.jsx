@@ -3,7 +3,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import {
-    Alert,
     Keyboard,
     StyleSheet, Text, TextInput,
     TouchableOpacity,
@@ -12,6 +11,7 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import CountryDropdown from '../../components/CountryDropdown';
+import { CustomAlertManager } from '../../components/CustomAlert';
 import CustomButton from '../../components/CustomButton';
 import { Colors, Fonts } from '../../constants/theme';
 
@@ -90,7 +90,11 @@ export default function RegisterScreen() {
         setTouched({ username: true, password: true, email: true, phone: true });
 
         if (!isFormValid) {
-            Alert.alert('Xəta', 'Zəhmət olmasa, formu düzgün doldurun və şərtləri qəbul edin.');
+            CustomAlertManager.show({
+                title: 'Xəta',
+                message: 'Zəhmət olmasa, formu düzgün doldurun və şərtləri qəbul edin.',
+                type: 'error'
+            });
             return;
         }
 
@@ -106,11 +110,20 @@ export default function RegisterScreen() {
 
             await AsyncStorage.setItem("user", JSON.stringify(user));
 
-            Alert.alert('Uğur', 'Hesab yaradıldı. Zəhmət olmasa daxil olun.', [
-                { text: 'OK', onPress: () => router.replace('/(auth)/login') }
-            ]);
+            CustomAlertManager.show({
+                title: 'Uğur',
+                message: 'Hesab yaradıldı. Zəhmət olmasa daxil olun.',
+                type: 'success',
+                buttons: [
+                    { text: 'OK', onPress: () => router.replace('/(auth)/login') }
+                ]
+            });
         } catch (error) {
-            Alert.alert('Xəta', error?.message || 'Qeydiyyat alınmadı.');
+            CustomAlertManager.show({
+                title: 'Xəta',
+                message: error?.message || 'Qeydiyyat alınmadı.',
+                type: 'error'
+            });
         } finally {
             setIsSubmitting(false);
         }
