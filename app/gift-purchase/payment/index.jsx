@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { CustomAlertManager } from '../../../components/CustomAlert';
 import { Colors, Fonts } from '../../../constants/theme';
 
 export default function PaymentScreen() {
@@ -42,10 +43,11 @@ export default function PaymentScreen() {
     
     setTimeout(() => {
       setIsProcessing(false);
-      Alert.alert(
-        'Uğurlu ödəniş!',
-        'Hədiyyə kartınız uğurla yaradıldı və qəbul edənə göndərildi.',
-        [
+      CustomAlertManager.show({
+        title: 'Uğurlu ödəniş!',
+        message: 'Hədiyyə kartınız uğurla yaradıldı və qəbul edənə göndərildi.',
+        type: 'success',
+        buttons: [
           {
             text: 'Tamam',
             onPress: () => {
@@ -53,7 +55,7 @@ export default function PaymentScreen() {
             }
           }
         ]
-      );
+      });
     }, 2000);
   };
 

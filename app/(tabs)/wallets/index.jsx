@@ -1,7 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMemo, useState } from 'react';
 import {
-    Alert,
     Image,
     Platform,
     ScrollView,
@@ -11,7 +10,9 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { CustomAlertManager } from '../../../components/CustomAlert';
 import CustomButton from '../../../components/CustomButton';
+import FilterScreen from '../../../components/FilterScreen';
 import { Colors, Fonts } from '../../../constants/theme';
 
 export default function CardsScreen() {
@@ -19,6 +20,8 @@ export default function CardsScreen() {
     const [selectedCategory, setSelectedCategory] = useState('Hamısı');
     const [totalBalance, setTotalBalance] = useState(0);
     const [purchasedCards, setPurchasedCards] = useState([]);
+    const [filterVisible, setFilterVisible] = useState(false);
+    const [appliedFilters, setAppliedFilters] = useState(null);
 
     const categories = [
         { id: 'all', name: 'Hamısı', icon: 'grid-outline' },
@@ -96,29 +99,72 @@ export default function CardsScreen() {
             );
         }
 
+        // Apply additional filters from FilterScreen
+        if (appliedFilters) {
+            // Filter by categories from filter screen
+            if (appliedFilters.categories.length > 0 && !appliedFilters.categories.includes('all')) {
+                filtered = filtered.filter(card => 
+                    appliedFilters.categories.includes(card.category)
+                );
+            }
+
+            // Filter by price range
+            if (appliedFilters.priceRange) {
+                filtered = filtered.filter(card => {
+                    const cardPrice = typeof card.price === 'string' 
+                        ? parseFloat(card.price.replace(/[^\d.-]/g, '')) 
+                        : card.price;
+                    return cardPrice >= appliedFilters.priceRange.min && 
+                           cardPrice <= appliedFilters.priceRange.max;
+                });
+            }
+
+            // Filter by brands (you can extend this based on your card data structure)
+            if (appliedFilters.brands.length > 0) {
+                filtered = filtered.filter(card => 
+                    appliedFilters.brands.some(brandId => 
+                        card.title.toLowerCase().includes(brandId.toLowerCase())
+                    )
+                );
+            }
+        }
+
         return filtered;
-    }, [searchText, selectedCategory]);
+    }, [searchText, selectedCategory, appliedFilters]);
 
     const handleCategoryPress = (category) => {
         setSelectedCategory(category.name);
     };
 
+    const handleFilterPress = () => {
+        setFilterVisible(true);
+    };
+
+    const handleApplyFilters = (filters) => {
+        setAppliedFilters(filters);
+    };
+
     const handleBuyCard = (card) => {
-        Alert.alert(
-            'Kartı Satın Al',
-            `${card.title} kartını ${card.price} ₼ qarşılığında almaq istəyirsiniz?`,
-            [
+        CustomAlertManager.show({
+            title: 'Kartı Satın Al',
+            message: `${card.title} kartını ${card.price} ₼ qarşılığında almaq istəyirsiniz?`,
+            type: 'info',
+            buttons: [
                 { text: 'Ləğv et', style: 'cancel' },
                 {
                     text: 'Satın Al',
                     onPress: () => {
                         setTotalBalance(prev => prev + card.price);
                         setPurchasedCards(prev => [...prev, card.id]);
-                        Alert.alert('Uğurlu!', `${card.title} kartı uğurla satın alındı!`);
+                        CustomAlertManager.show({
+                            title: 'Uğurlu!',
+                            message: `${card.title} kartı uğurla satın alındı!`,
+                            type: 'success'
+                        });
                     }
                 }
             ]
-        );
+        });
     };
 
     const renderCard = ({ item }) => (
@@ -198,7 +244,7 @@ export default function CardsScreen() {
                             onChangeText={setSearchText}
                         />
                     </View>
-                    <TouchableOpacity style={styles.filterButton}>
+                    <TouchableOpacity style={styles.filterButton} onPress={handleFilterPress}>
                         <Ionicons name="filter" size={22} color={Colors.textSecondary} />
                     </TouchableOpacity>
                 </View>
@@ -245,6 +291,12 @@ export default function CardsScreen() {
                     )}
                 </View>
             </ScrollView>
+            
+            <FilterScreen
+                visible={filterVisible}
+                onClose={() => setFilterVisible(false)}
+                onApplyFilters={handleApplyFilters}
+            />
         </View>
     );
 }

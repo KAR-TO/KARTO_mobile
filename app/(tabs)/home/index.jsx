@@ -2,14 +2,18 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Image, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { Colors, Fonts } from '../../../constants/theme';
+import { Image, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { CustomAlertManager } from '../../../components/CustomAlert';
 import CustomButton from '../../../components/CustomButton';
+import FilterScreen from '../../../components/FilterScreen';
+import { Colors, Fonts } from '../../../constants/theme';
 
 export default function HomeScreen() {
     const router = useRouter();
     const [searchText, setSearchText] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('Geyim mağazaları');
+    const [filterVisible, setFilterVisible] = useState(false);
+    const [appliedFilters, setAppliedFilters] = useState(null);
 
     const categories = [
         { id: 'clothing', name: 'Geyim', icon: 'shirt-outline', active: true },
@@ -38,14 +42,14 @@ export default function HomeScreen() {
     }, [router]);
 
     const handleLogout = async () => {
-        Alert.alert(
-            'Çıxış',
-            'Hesabınızdan çıxmaq istədiyinizə əminsiniz?',
-            [
+        CustomAlertManager.show({
+            title: 'Çıxış',
+            message: 'Hesabınızdan çıxmaq istədiyinizə əminsiniz?',
+            type: 'warning',
+            buttons: [
                 { text: 'Ləğv et', style: 'cancel' },
                 {
                     text: 'Çıx',
-                    style: 'destructive',
                     onPress: async () => {
                         try {
                             await AsyncStorage.removeItem('loggedIn');
@@ -57,28 +61,24 @@ export default function HomeScreen() {
                     }
                 }
             ]
-        );
+        });
     };
 
     const handleCategoryPress = (category) => {
         setSelectedCategory(category.name);
     };
 
-    // const handleOfferPress = (offer) => {
-    //     router.push({
-    //         pathname: '/gift-purchase/selection',
-    //         params: {
-    //             brand: offer.brand,
-    //             category: offer.category,
-    //             price: offer.price
-    //         }
-    //     });
-    // };
+    const handleFilterPress = () => {
+        setFilterVisible(true);
+    };
+
+    const handleApplyFilters = (filters) => {
+        setAppliedFilters(filters);
+    };
 
     return (
 
         <ScrollView
-            // horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.categoriesContent}
         >
@@ -94,7 +94,7 @@ export default function HomeScreen() {
                             onChangeText={setSearchText}
                         />
                     </View>
-                    <TouchableOpacity style={styles.filterButton}>
+                    <TouchableOpacity style={styles.filterButton} onPress={handleFilterPress}>
                         <Ionicons name="filter" size={20} color={Colors.textSecondary} />
                     </TouchableOpacity>
                 </View>
@@ -153,92 +153,13 @@ export default function HomeScreen() {
                         <CustomButton title='"Karto" al' onPress={() => { }} />
                     </View>
                 </View>
-                {/* 
-                <View style={styles.offersSection}>
-                    <View style={styles.offersHeader}>
-                        <Ionicons name="star" size={20} color={Colors.warning} />
-                        <Text style={styles.offersTitle}>Ən sərfəli təkliflər</Text>
-                    </View>
-                    <Text style={styles.offersSubtitle}>Karto istifadəçilərinin 99%-i bu kartları seçir</Text>
-
-                    <ScrollView
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        style={styles.offersContainer}
-                    >
-                        {bestOffers.map((offer) => (
-                            <TouchableOpacity
-                                key={offer.id}
-                                style={[styles.offerCard, { backgroundColor: offer.color }]}
-                                onPress={() => handleOfferPress(offer)}
-                            >
-                                <View style={styles.offerCardHeader}>
-                                    {offer.image ? (
-                                        <Image
-                                            source={offer.image}
-                                            style={styles.offerImage}
-                                            resizeMode="contain"
-                                        />
-                                    ) : (
-                                        <Text style={styles.offerLogo}>{offer.logo}</Text>
-                                    )}
-                                    <Ionicons name="flame" size={16} color={Colors.warning} />
-                                </View>
-
-                                <View style={styles.offerCardContent}>
-                                    <Text style={[styles.offerBrand, { color: offer.accentColor }]}>
-                                        {offer.brand}
-                                    </Text>
-                                    <Text style={styles.offerPrice}>{offer.price}</Text>
-                                </View>
-                            </TouchableOpacity>
-                        ))}
-                    </ScrollView>
-                </View>
-
-                <View style={styles.additionalFeatures}>
-                    <Text style={styles.featuresTitle}>Əlavə Xüsusiyyətlər</Text>
-
-                    <View style={styles.featuresGrid}>
-                        <TouchableOpacity
-                            style={styles.featureButton}
-                            onPress={() => router.push('/info/partners')}
-                        >
-                            <Ionicons name="business" size={24} color={Colors.primary} />
-                            <Text style={styles.featureText}>Tərəfdaşlar</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={styles.featureButton}
-                            onPress={() => router.push('/info/newcomers')}
-                        >
-                            <Ionicons name="people" size={24} color={Colors.success} />
-                            <Text style={styles.featureText}>Yeni İstifadəçilər</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={styles.featureButton}
-                            onPress={() => console.log('Settings')}
-                        >
-                            <Ionicons name="settings" size={24} color={Colors.warning} />
-                            <Text style={styles.featureText}>Tənzimləmələr</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={styles.featureButton}
-                            onPress={() => console.log('Help')}
-                        >
-                            <Ionicons name="help-circle" size={24} color={Colors.error} />
-                            <Text style={styles.featureText}>Yardım</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View> */}
-
-                {/* <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-                    <Ionicons name="log-out-outline" size={20} color="#fff" />
-                    <Text style={styles.logoutText}>Çıxış</Text>
-                </TouchableOpacity> */}
             </View>
+            
+            <FilterScreen
+                visible={filterVisible}
+                onClose={() => setFilterVisible(false)}
+                onApplyFilters={handleApplyFilters}
+            />
         </ScrollView>
 
     );
@@ -259,7 +180,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         // paddingHorizontal: 20,
         marginBottom: 10,
-        // gap: 12,
+        gap: 12,
     },
     searchBar: {
         flex: 1,
@@ -284,6 +205,7 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         alignItems: 'center',
         justifyContent: 'center',
+        marginLeft: 12,
     },
     categoryButton: {
         flexDirection: 'row',
@@ -368,64 +290,7 @@ const styles = StyleSheet.create({
         fontFamily: Fonts.Poppins_SemiBold,
         color: '#fff',
     },
-    // offersSection: {
-    //     paddingHorizontal: 20,
-    //     marginBottom: 30,
-    // },
-    // offersHeader: {
-    //     flexDirection: 'row',
-    //     alignItems: 'center',
-    //     marginBottom: 8,
-    //     gap: 8,
-    // },
-    // offersTitle: {
-    //     fontSize: 18,
-    //     fontFamily: Fonts.Poppins_SemiBold,
-    //     color: Colors.textPrimary,
-    // },
-    // offersSubtitle: {
-    //     fontSize: 14,
-    //     fontFamily: Fonts.Poppins_Regular,
-    //     color: Colors.textSecondary,
-    //     marginBottom: 16,
-    // },
-    // offersContainer: {
-    //     gap: 16,
-    // },
-    // offerCard: {
-    //     width: 160,
-    //     height: 120,
-    //     borderRadius: 12,
-    //     padding: 16,
-    //     marginRight: 16,
-    // },
-    // offerCardHeader: {
-    //     flexDirection: 'row',
-    //     justifyContent: 'space-between',
-    //     alignItems: 'flex-start',
-    //     marginBottom: 20,
-    // },
-    // offerLogo: {
-    //     fontSize: 32,
-    // },
-    // offerImage: {
-    //     width: 40,
-    //     height: 40,
-    // },
-    // offerCardContent: {
-    //     flex: 1,
-    //     justifyContent: 'flex-end',
-    // },
-    // offerBrand: {
-    //     fontSize: 16,
-    //     fontFamily: Fonts.Poppins_SemiBold,
-    //     marginBottom: 4,
-    // },
-    // offerPrice: {
-    //     fontSize: 14,
-    //     fontFamily: Fonts.Poppins_Regular,
-    //     color: Colors.textSecondary,
-    // },
+    
     logoutButton: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -442,41 +307,5 @@ const styles = StyleSheet.create({
         fontFamily: Fonts.Poppins_SemiBold,
         color: '#fff',
     },
-    // additionalFeatures: {
-    //     paddingHorizontal: 20,
-    //     marginBottom: 20,
-    // },
-    // featuresTitle: {
-    //     fontSize: 18,
-    //     fontFamily: Fonts.Poppins_SemiBold,
-    //     color: Colors.textPrimary,
-    //     marginBottom: 16,
-    // },
-    // featuresGrid: {
-    //     flexDirection: 'row',
-    //     flexWrap: 'wrap',
-    //     gap: 12,
-    // },
-    // featureButton: {
-    //     backgroundColor: '#fff',
-    //     borderRadius: 12,
-    //     padding: 16,
-    //     alignItems: 'center',
-    //     width: '47%',
-    //     shadowColor: '#000',
-    //     shadowOffset: {
-    //         width: 0,
-    //         height: 2,
-    //     },
-    //     shadowOpacity: 0.1,
-    //     shadowRadius: 4,
-    //     elevation: 3,
-    // },
-    // featureText: {
-    //     fontSize: 14,
-    //     fontFamily: Fonts.Poppins_Regular,
-    //     color: Colors.textPrimary,
-    //     marginTop: 8,
-    //     textAlign: 'center',
-    // },
+    
 });
