@@ -2,7 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { CustomAlertManager } from '../../../components/CustomAlert';
 import { Colors, Fonts } from '../../../constants/theme';
 
 export default function ProfileScreen() {
@@ -32,14 +33,14 @@ export default function ProfileScreen() {
   }, [router]);
 
   const handleLogout = async () => {
-    Alert.alert(
-      'Çıxış',
-      'Hesabınızdan çıxmaq istədiyinizə əminsiniz?',
-      [
+    CustomAlertManager.show({
+      title: 'Çıxış',
+      message: 'Hesabınızdan çıxmaq istədiyinizə əminsiniz?',
+      type: 'warning',
+      buttons: [
         { text: 'Ləğv et', style: 'cancel' },
         {
           text: 'Çıx',
-          style: 'destructive',
           onPress: async () => {
             try {
               await AsyncStorage.removeItem('loggedIn');
@@ -51,7 +52,7 @@ export default function ProfileScreen() {
           }
         }
       ]
-    );
+    });
   };
 
   const menuItems = [
