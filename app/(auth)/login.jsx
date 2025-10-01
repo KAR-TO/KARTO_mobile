@@ -3,7 +3,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import {
-    Alert,
     Keyboard,
     StyleSheet, Text, TextInput,
     TouchableOpacity,
@@ -11,6 +10,7 @@ import {
     View
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { CustomAlertManager } from '../../components/CustomAlert';
 import CustomButton from '../../components/CustomButton';
 import { Colors, Fonts } from '../../constants/theme';
 
@@ -59,7 +59,11 @@ export default function LoginScreen() {
         setTouched({ password: true, identifier: true });
 
         if (!isFormValid) {
-            Alert.alert("Xəta", "Zəhmət olmasa, formu düzgün doldurun.");
+            CustomAlertManager.show({
+                title: "Xəta",
+                message: "Zəhmət olmasa, formu düzgün doldurun.",
+                type: "error"
+            });
             return;
         }
 
@@ -69,7 +73,11 @@ export default function LoginScreen() {
             const savedUser = await AsyncStorage.getItem("user");
 
             if (!savedUser) {
-                Alert.alert("Xəta", "İstifadəçi tapılmadı. Qeydiyyatdan keçin.");
+                CustomAlertManager.show({
+                    title: "Xəta",
+                    message: "İstifadəçi tapılmadı. Qeydiyyatdan keçin.",
+                    type: "error"
+                });
                 return;
             }
 
@@ -83,10 +91,18 @@ export default function LoginScreen() {
                 await AsyncStorage.setItem("loggedIn", "true"); 
                 router.replace("/(tabs)/home");
             } else {
-                Alert.alert("Xəta", "Email/Telefon və ya şifrə yanlışdır.");
+                CustomAlertManager.show({
+                    title: "Xəta",
+                    message: "Email/Telefon və ya şifrə yanlışdır.",
+                    type: "error"
+                });
             }
         } catch (_error) {
-            Alert.alert("Xəta", "Daxil olmaq alınmadı.");
+            CustomAlertManager.show({
+                title: "Xəta",
+                message: "Daxil olmaq alınmadı.",
+                type: "error"
+            });
         } finally {
             setIsSubmitting(false);
         }
@@ -125,7 +141,7 @@ export default function LoginScreen() {
                                     style={styles.inputIcon}
                                 />
                                 <TextInput
-                                    placeholder="Email və ya telefon nömrə daxil edin"
+                                    placeholder="Email və ya nömrə daxil edin"
                                     placeholderTextColor={Colors.placeholder}
                                     keyboardType="default"
                                     style={styles.input}
