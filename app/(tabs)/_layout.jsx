@@ -216,15 +216,6 @@ export default function TabLayout() {
                 }}
             />
             <Tabs.Screen
-                name="profile/index"
-                options={{
-                    title: 'Profil',
-                    tabBarIcon: ({ color, size, focused }) => (
-                        <ProfileIcon color={color} size={size} focused={focused} />
-                    ),
-                }}
-            />
-            <Tabs.Screen
                 name="community/index"
                 options={{
                     title: 'Cəmiyyət',
@@ -233,12 +224,20 @@ export default function TabLayout() {
                     ),
                 }}
             />
+            <Tabs.Screen
+                name="profile/index"
+                options={{
+                    title: 'Profil',
+                    tabBarIcon: ({ color, size, focused }) => (
+                        <ProfileIcon color={color} size={size} focused={focused} />
+                    ),
+                }}
+            />
         </Tabs>
     );
 }
 
 const styles = StyleSheet.create({
-    // Regular tab icons with subtle active background
     regularTabIcon: {
         width: 40,
         height: 40,
@@ -252,21 +251,19 @@ const styles = StyleSheet.create({
         position: 'absolute',
         width: '100%',
         height: '100%',
-        backgroundColor: `${Colors.primary}15`, // 15% opacity
+        backgroundColor: `${Colors.primary}15`, 
         borderRadius: 12,
     },
 
-    // FAB container for proper positioning
     fabContainer: {
         position: 'relative',
         alignItems: 'center',
         justifyContent: 'center',
         width: 70,
         height: 60,
-        marginTop: -35, // Lift above tab bar
+        marginTop: -35, 
     },
 
-    // Main QR FAB button
     qrButton: {
         width: 65,
         height: 65,
@@ -284,7 +281,6 @@ const styles = StyleSheet.create({
         elevation: 15,
         borderWidth: Platform.OS === 'ios' ? 3 : 2,
         borderColor: `${Colors.primary}20`,
-        // Add gradient-like effect with multiple shadows
         ...Platform.select({
             ios: {
                 shadowColor: Colors.primary,
@@ -298,7 +294,6 @@ const styles = StyleSheet.create({
         }),
     },
 
-    // Active state for QR button
     qrButtonActive: {
         backgroundColor: Colors.primary,
         transform: [{ scale: 1.1 }],
@@ -307,7 +302,6 @@ const styles = StyleSheet.create({
         elevation: 20,
         borderColor: '#FFFFFF',
         borderWidth: 3,
-        // Enhanced glow effect when active
         ...Platform.select({
             ios: {
                 shadowColor: Colors.primary,

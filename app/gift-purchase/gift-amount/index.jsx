@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Colors, Fonts } from '../../../constants/theme';
 
 export default function GiftAmountScreen() {
@@ -9,17 +9,15 @@ export default function GiftAmountScreen() {
   const params = useLocalSearchParams();
   const [selectedAmount, setSelectedAmount] = useState('');
   const [customAmount, setCustomAmount] = useState('');
+  const [slideIndex, setSlideIndex] = useState(0); 
 
   const { brand, category, price, recipient } = params;
 
-  const predefinedAmounts = [
-    { value: '25', label: '25 ₼' },
-    { value: '50', label: '50 ₼' },
-    { value: '100', label: '100 ₼' },
-    { value: '150', label: '150 ₼' },
-    { value: '200', label: '200 ₼' },
-    { value: '500', label: '500 ₼' },
-  ];
+  const predefinedAmounts = useMemo(() => ([
+    { value: '50', label: '50₼' },
+    { value: '100', label: '100₼' },
+    { value: '200', label: '200₼' },
+  ]), []);
 
   const handleAmountSelect = (amount) => {
     setSelectedAmount(amount);
@@ -49,6 +47,9 @@ export default function GiftAmountScreen() {
     });
   };
 
+  const toPrevSlide = () => setSlideIndex((prev) => (prev === 0 ? 0 : prev - 1));
+  const toNextSlide = () => setSlideIndex((prev) => (prev === 1 ? 1 : prev + 1));
+
   const handleGoBack = () => {
     router.back();
   };
@@ -58,64 +59,77 @@ export default function GiftAmountScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-            <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
+            <Ionicons name="arrow-back" size={22} color={Colors.textPrimary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Hədiyyə məbləği</Text>
           <View style={styles.placeholder} />
         </View>
 
-        <View style={styles.brandInfo}>
-          <Text style={styles.brandName}>{brand}</Text>
-          <Text style={styles.brandCategory}>{category}</Text>
+        <View style={styles.carouselWrapper}>
+          <View style={styles.carouselCard}>
+            {slideIndex === 0 ? (
+              <Image source={require('../../../assets/images/karto.png')} style={styles.kartoImage} resizeMode="contain" />
+            ) : (
+              <View style={styles.uploadPlaceholder}>
+                <Ionicons name="add-circle-outline" size={36} color={Colors.primary} />
+                <Text style={styles.uploadText}>Öz şəklinizi/videonuzu əlavə edin</Text>
+              </View>
+            )}
+          </View>
+          <View style={styles.carouselControls}>
+            <TouchableOpacity style={styles.circleBtn} onPress={toPrevSlide}>
+              <Ionicons name="chevron-back" size={20} color={Colors.primary} />
+            </TouchableOpacity>
+            <View style={styles.dots}>
+              <View style={[styles.dot, slideIndex === 0 ? styles.dotActive : null]} />
+              <View style={[styles.dot, slideIndex === 1 ? styles.dotActive : null]} />
+            </View>
+            <TouchableOpacity style={styles.circleBtn} onPress={toNextSlide}>
+              <Ionicons name="chevron-forward" size={20} color={Colors.primary} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={styles.amountSection}>
           <Text style={styles.sectionTitle}>Məbləği seçin</Text>
-          
           <View style={styles.predefinedAmounts}>
             {predefinedAmounts.map((amount) => (
               <TouchableOpacity
                 key={amount.value}
                 style={[
-                  styles.amountButton,
-                  selectedAmount === amount.value && styles.amountButtonActive
+                  styles.amountPill,
+                  selectedAmount === amount.value && styles.amountPillActive
                 ]}
                 onPress={() => handleAmountSelect(amount.value)}
               >
                 <Text style={[
-                  styles.amountButtonText,
-                  selectedAmount === amount.value && styles.amountButtonTextActive
-                ]}>
-                  {amount.label}
-                </Text>
+                  styles.amountPillText,
+                  selectedAmount === amount.value && styles.amountPillTextActive
+                ]}>{amount.label}</Text>
               </TouchableOpacity>
             ))}
           </View>
 
           <View style={styles.customAmountContainer}>
-            <Text style={styles.customAmountLabel}>Və ya öz məbləğinizi daxil edin</Text>
-            <View style={styles.customAmountInput}>
-              <TextInput
-                style={styles.amountInput}
-                placeholder="0"
-                placeholderTextColor={Colors.placeholder}
-                keyboardType="numeric"
-                value={customAmount}
-                onChangeText={handleCustomAmountChange}
-              />
-              <Text style={styles.currencySymbol}>₼</Text>
-            </View>
+            <TextInput
+              style={styles.amountTextInput}
+              placeholder="Məbləği daxil edin"
+              placeholderTextColor={Colors.placeholder}
+              keyboardType="numeric"
+              value={customAmount}
+              onChangeText={handleCustomAmountChange}
+            />
           </View>
         </View>
 
-        {(selectedAmount || customAmount) && (
-          <View style={styles.selectedAmountContainer}>
-            <Text style={styles.selectedAmountLabel}>Seçilmiş məbləğ:</Text>
-            <Text style={styles.selectedAmountValue}>
-              {selectedAmount || customAmount} ₼
-            </Text>
-          </View>
-        )}
+        <View style={styles.messageContainer}>
+          <TextInput
+            style={styles.messageInput}
+            placeholder="Mesajınız"
+            placeholderTextColor={Colors.placeholder}
+            multiline
+          />
+        </View>
 
         <TouchableOpacity
           style={[
@@ -127,21 +141,7 @@ export default function GiftAmountScreen() {
         >
           <Text style={styles.continueButtonText}>Davam et</Text>
         </TouchableOpacity>
-
-        <View style={styles.infoSection}>
-          <View style={styles.infoItem}>
-            <Ionicons name="shield-checkmark" size={20} color={Colors.success} />
-            <Text style={styles.infoText}>Təhlükəsiz ödəniş</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Ionicons name="flash" size={20} color={Colors.warning} />
-            <Text style={styles.infoText}>Anında aktivləşmə</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Ionicons name="gift" size={20} color={Colors.primary} />
-            <Text style={styles.infoText}>Hədiyyə kartı</Text>
-          </View>
-        </View>
+        
       </ScrollView>
     </View>
   );
@@ -175,21 +175,56 @@ const styles = StyleSheet.create({
   placeholder: {
     width: 40,
   },
-  brandInfo: {
-    alignItems: 'center',
+  carouselWrapper: {
     paddingHorizontal: 20,
-    marginBottom: 30,
   },
-  brandName: {
-    fontSize: 24,
-    fontFamily: Fonts.Poppins_SemiBold,
-    color: Colors.textPrimary,
-    marginBottom: 8,
+  carouselCard: {
+    backgroundColor: '#e9f3ea',
+    borderRadius: 12,
+    height: 180,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  brandCategory: {
-    fontSize: 16,
+  kartoImage: {
+    width: '90%',
+    height: 150,
+  },
+  uploadPlaceholder: {
+    alignItems: 'center',
+  },
+  uploadText: {
+    marginTop: 8,
+    color: Colors.primary,
     fontFamily: Fonts.Poppins_Regular,
-    color: Colors.textSecondary,
+  },
+  carouselControls: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  circleBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dots: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#e0e0e0',
+  },
+  dotActive: {
+    backgroundColor: Colors.primary,
   },
   amountSection: {
     paddingHorizontal: 20,
@@ -203,86 +238,68 @@ const styles = StyleSheet.create({
   },
   predefinedAmounts: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    marginBottom: 30,
-  },
-  amountButton: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderWidth: 2,
-    borderColor: '#e0e0e0',
-    minWidth: 100,
     alignItems: 'center',
+    gap: 14,
+    marginBottom: 16,
   },
-  amountButtonActive: {
-    backgroundColor: Colors.primary,
+  amountPill: {
+    minWidth: 74,
+    height: 36,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#dcdcdc',
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  amountPillActive: {
     borderColor: Colors.primary,
   },
-  amountButtonText: {
-    fontSize: 16,
-    fontFamily: Fonts.Poppins_Regular,
+  amountPillText: {
+    fontSize: 14,
     color: Colors.textSecondary,
+    fontFamily: Fonts.Poppins_Regular,
   },
-  amountButtonTextActive: {
-    color: '#fff',
+  amountPillTextActive: {
+    color: Colors.textPrimary,
+    fontFamily: Fonts.Poppins_SemiBold,
   },
   customAmountContainer: {
-    marginTop: 10,
+    marginTop: 6,
   },
-  customAmountLabel: {
-    fontSize: 16,
+  amountTextInput: {
+    height: 36,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    backgroundColor: '#fff',
+    paddingHorizontal: 12,
+    fontSize: 14,
+    color: Colors.textPrimary,
     fontFamily: Fonts.Poppins_Regular,
-    color: Colors.textSecondary,
-    marginBottom: 12,
   },
-  customAmountInput: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  messageContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 10,
+  },
+  messageInput: {
     backgroundColor: '#fff',
     borderRadius: 12,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: '#e0e0e0',
-    paddingHorizontal: 16,
-  },
-  amountInput: {
-    flex: 1,
-    fontSize: 18,
-    fontFamily: Fonts.Poppins_Regular,
-    color: Colors.textPrimary,
-    paddingVertical: 16,
-  },
-  currencySymbol: {
-    fontSize: 18,
-    fontFamily: Fonts.Poppins_SemiBold,
-    color: Colors.textPrimary,
-  },
-  selectedAmountContainer: {
-    backgroundColor: Colors.primary,
-    marginHorizontal: 20,
-    borderRadius: 12,
-    padding: 20,
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-  selectedAmountLabel: {
+    minHeight: 90,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     fontSize: 14,
     fontFamily: Fonts.Poppins_Regular,
-    color: '#fff',
-    marginBottom: 4,
-  },
-  selectedAmountValue: {
-    fontSize: 24,
-    fontFamily: Fonts.Poppins_SemiBold,
-    color: '#fff',
+    color: Colors.textPrimary,
   },
   continueButton: {
     backgroundColor: Colors.primary,
     marginHorizontal: 20,
     borderRadius: 12,
-    paddingVertical: 18,
+    paddingVertical: 14,
     alignItems: 'center',
     marginBottom: 30,
   },
@@ -290,24 +307,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.disabled,
   },
   continueButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: Fonts.Poppins_SemiBold,
     color: '#fff',
-  },
-  infoSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingHorizontal: 20,
-  },
-  infoItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  infoText: {
-    fontSize: 12,
-    fontFamily: Fonts.Poppins_Regular,
-    color: Colors.textSecondary,
-    marginTop: 8,
-    textAlign: 'center',
   },
 });

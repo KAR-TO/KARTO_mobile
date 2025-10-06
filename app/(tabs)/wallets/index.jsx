@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
     Image,
@@ -10,12 +11,12 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-import { CustomAlertManager } from '../../../components/CustomAlert';
 import CustomButton from '../../../components/CustomButton';
 import FilterScreen from '../../../components/FilterScreen';
 import { Colors, Fonts } from '../../../constants/theme';
 
 export default function CardsScreen() {
+    const router = useRouter();
     const [searchText, setSearchText] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('Hamısı');
     const [totalBalance, setTotalBalance] = useState(0);
@@ -23,16 +24,16 @@ export default function CardsScreen() {
     const [filterVisible, setFilterVisible] = useState(false);
     const [appliedFilters, setAppliedFilters] = useState(null);
 
-    const categories = [
+    const categories = useMemo(() => [
         { id: 'all', name: 'Hamısı', icon: 'grid-outline' },
         { id: 'clothing', name: 'Geyim', icon: 'shirt-outline' },
         { id: 'books', name: 'Kitab', icon: 'book-outline' },
         { id: 'electronics', name: 'Elektronika', icon: 'phone-portrait-outline' },
         { id: 'beauty', name: 'Gözəllik', icon: 'sparkles-outline' },
         { id: 'entertainment', name: 'Əyləncə', icon: 'game-controller-outline' },
-    ];
+    ], []);
 
-    const cards = [
+    const cards = useMemo(() => [
         {
             id: 1,
             title: 'Adidas',
@@ -81,34 +82,29 @@ export default function CardsScreen() {
             image: require('../../../assets/images/puma.png'),
             backgroundColor: '#F5F5F5'
         }
-    ];
+    ], []);
 
     const filteredCards = useMemo(() => {
         let filtered = cards;
 
-        // Filter by category
         if (selectedCategory !== 'Hamısı') {
             const categoryKey = categories.find(cat => cat.name === selectedCategory)?.id;
             filtered = filtered.filter(card => card.category === categoryKey);
         }
 
-        // Filter by search text
         if (searchText) {
             filtered = filtered.filter(card =>
                 card.title.toLowerCase().includes(searchText.toLowerCase())
             );
         }
 
-        // Apply additional filters from FilterScreen
         if (appliedFilters) {
-            // Filter by categories from filter screen
             if (appliedFilters.categories.length > 0 && !appliedFilters.categories.includes('all')) {
                 filtered = filtered.filter(card => 
                     appliedFilters.categories.includes(card.category)
                 );
             }
 
-            // Filter by price range
             if (appliedFilters.priceRange) {
                 filtered = filtered.filter(card => {
                     const cardPrice = typeof card.price === 'string' 
@@ -119,7 +115,6 @@ export default function CardsScreen() {
                 });
             }
 
-            // Filter by brands (you can extend this based on your card data structure)
             if (appliedFilters.brands.length > 0) {
                 filtered = filtered.filter(card => 
                     appliedFilters.brands.some(brandId => 
@@ -130,7 +125,7 @@ export default function CardsScreen() {
         }
 
         return filtered;
-    }, [searchText, selectedCategory, appliedFilters]);
+    }, [searchText, selectedCategory, appliedFilters, categories, cards]);
 
     const handleCategoryPress = (category) => {
         setSelectedCategory(category.name);
@@ -145,25 +140,19 @@ export default function CardsScreen() {
     };
 
     const handleBuyCard = (card) => {
-        CustomAlertManager.show({
-            title: 'Kartı Satın Al',
-            message: `${card.title} kartını ${card.price} ₼ qarşılığında almaq istəyirsiniz?`,
-            type: 'info',
-            buttons: [
-                { text: 'Ləğv et', style: 'cancel' },
-                {
-                    text: 'Satın Al',
-                    onPress: () => {
-                        setTotalBalance(prev => prev + card.price);
-                        setPurchasedCards(prev => [...prev, card.id]);
-                        CustomAlertManager.show({
-                            title: 'Uğurlu!',
-                            message: `${card.title} kartı uğurla satın alındı!`,
-                            type: 'success'
-                        });
-                    }
-                }
-            ]
+        const numericPrice = typeof card.price === 'string' 
+            ? parseFloat(String(card.price).replace(/[^\d.-]/g, '')) 
+            : Number(card.price || 0);
+        setTotalBalance(prev => prev + (isNaN(numericPrice) ? 0 : numericPrice));
+        setPurchasedCards(prev => prev.includes(card.id) ? prev : [...prev, card.id]);
+
+        router.push({
+            pathname: '/gift-purchase/selection',
+            params: {
+                brand: card.title,
+                category: categories.find(c => c.id === card.category)?.name || '',
+                price: typeof card.price === 'string' ? card.price : String(card.price)
+            }
         });
     };
 
@@ -208,7 +197,6 @@ export default function CardsScreen() {
 
     return (
         <View style={styles.container}>
-            {/* Header with Gradient Background */}
             <View style={styles.header}>
                 <Text style={styles.title}>Kartlar</Text>
                 <Text style={styles.subtitle}>Hədiyyə kartlarını kəşf edin</Text>
@@ -218,7 +206,6 @@ export default function CardsScreen() {
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingBottom: 80 }}
             >
-                {/* Balance Card */}
                 <View style={[styles.balanceCard, styles.horizontalPadding]}>
                     <Text style={styles.balanceLabel}>Cəmi Balans</Text>
                     <View style={styles.balanceFooter}>
@@ -232,7 +219,6 @@ export default function CardsScreen() {
 
                 </View>
 
-                {/* Search Bar */}
                 <View style={[styles.searchContainer, styles.horizontalPadding]}>
                     <View style={styles.searchBar}>
                         <Ionicons name="search" size={22} color={Colors.textSecondary} />
@@ -249,7 +235,6 @@ export default function CardsScreen() {
                     </TouchableOpacity>
                 </View>
 
-                {/* Categories */}
                 <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
@@ -282,7 +267,6 @@ export default function CardsScreen() {
                     ))}
                 </ScrollView>
 
-                {/* Cards List */}
                 <View style={[styles.cardsContainer, styles.horizontalPadding]}>
                     {filteredCards.map((item) =>
                         <View key={item.id}>
