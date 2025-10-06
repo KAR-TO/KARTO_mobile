@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -11,7 +12,7 @@ export default function PaymentScreen() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('card');
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const { brand, category, amount, recipientInfo } = params; // removed price, recipient
+  const { brand, category, amount, recipientInfo } = params; 
 
   const paymentMethods = [
     {
@@ -50,8 +51,18 @@ export default function PaymentScreen() {
         buttons: [
           {
             text: 'Tamam',
-            onPress: () => {
-              router.replace('/(tabs)/home');
+            onPress: async () => {
+              try {
+                await AsyncStorage.setItem('hasGifts', 'true');
+                const now = new Date();
+                await AsyncStorage.setItem('lastGift', JSON.stringify({
+                  amount: amount,
+                  brand: brand,
+                  category: category,
+                  time: now.toISOString(),
+                }));
+              } catch {}
+              router.replace('/(tabs)/profile');
             }
           }
         ]
