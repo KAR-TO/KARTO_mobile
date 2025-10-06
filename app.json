@@ -7,9 +7,10 @@
     "icon": "./assets/images/icon.png",
     "scheme": "karto",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.ayselch.karto"
     },
     "android": {
       "adaptiveIcon": {
@@ -43,8 +44,7 @@
       "expo-web-browser"
     ],
     "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
+      "typedRoutes": true
     },
     "assetBundlePatterns": [
       "**/*"
