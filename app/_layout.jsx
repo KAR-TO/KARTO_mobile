@@ -33,6 +33,8 @@ export default function RootLayout() {
         <Stack.Screen name="splash" />
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="gift-purchase/share" />
+        <Stack.Screen name="gift-purchase/claim" />
         <Stack.Screen name="+not-found" options={{ title: 'Oops!' }} />
       </Stack>
       <StatusBar style="auto" />

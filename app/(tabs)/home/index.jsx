@@ -3,17 +3,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Image, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { CustomAlertManager } from '../../../components/CustomAlert';
 import CustomButton from '../../../components/CustomButton';
-import FilterScreen from '../../../components/FilterScreen';
 import { Colors, Fonts } from '../../../constants/theme';
 
 export default function HomeScreen() {
     const router = useRouter();
     const [searchText, setSearchText] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('Geyim mağazaları');
-    const [filterVisible, setFilterVisible] = useState(false);
-    const [appliedFilters, setAppliedFilters] = useState(null);
+    
 
     const categories = [
         { id: 'clothing', name: 'Geyim', icon: 'shirt-outline', active: true },
@@ -41,40 +38,19 @@ export default function HomeScreen() {
         }
     }, [router]);
 
-    const handleLogout = async () => {
-        CustomAlertManager.show({
-            title: 'Çıxış',
-            message: 'Hesabınızdan çıxmaq istədiyinizə əminsiniz?',
-            type: 'warning',
-            buttons: [
-                { text: 'Ləğv et', style: 'cancel' },
-                {
-                    text: 'Çıx',
-                    onPress: async () => {
-                        try {
-                            await AsyncStorage.removeItem('loggedIn');
-                            await AsyncStorage.removeItem('user');
-                            router.replace('/(auth)/login');
-                        } catch (error) {
-                            console.log('Logout error:', error);
-                        }
-                    }
-                }
-            ]
-        });
-    };
-
     const handleCategoryPress = (category) => {
+        router.push({
+            pathname: '/(tabs)/wallets',
+            params: { category: category.id }
+        });
         setSelectedCategory(category.name);
     };
 
     const handleFilterPress = () => {
-        setFilterVisible(true);
+        router.push({ pathname: '/(tabs)/wallets', params: { openFilter: '1' } });
     };
 
-    const handleApplyFilters = (filters) => {
-        setAppliedFilters(filters);
-    };
+    
 
     return (
 
@@ -92,6 +68,12 @@ export default function HomeScreen() {
                             placeholderTextColor={Colors.textSecondary}
                             value={searchText}
                             onChangeText={setSearchText}
+                            onSubmitEditing={() => {
+                                router.push({
+                                    pathname: '/(tabs)/wallets',
+                                    params: { q: searchText || '', focusSearch: '1' }
+                                });
+                            }}
                         />
                     </View>
                     <TouchableOpacity style={styles.filterButton} onPress={handleFilterPress}>
@@ -155,11 +137,7 @@ export default function HomeScreen() {
                 </View>
             </View>
             
-            <FilterScreen
-                visible={filterVisible}
-                onClose={() => setFilterVisible(false)}
-                onApplyFilters={handleApplyFilters}
-            />
+            
         </ScrollView>
 
     );
@@ -172,13 +150,11 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#f8f9fa',
-        // paddingBottom: 100,
         padding: 15,
         paddingTop: Platform.OS === 'android' ? 40 : 10,
     },
     searchContainer: {
         flexDirection: 'row',
-        // paddingHorizontal: 20,
         marginBottom: 10,
         gap: 12,
     },
@@ -250,7 +226,6 @@ const styles = StyleSheet.create({
     },
     kartoHeader: {
         alignItems: 'center',
-        // marginBottom: 10,
     },
     kartoHeaderText: {
         width: 230,

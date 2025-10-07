@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useMemo, useState } from 'react';
 import {
     Image,
     Platform,
@@ -17,6 +17,7 @@ import { Colors, Fonts } from '../../../constants/theme';
 
 export default function CardsScreen() {
     const router = useRouter();
+    const params = useLocalSearchParams();
     const [searchText, setSearchText] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('Hamısı');
     const [totalBalance, setTotalBalance] = useState(0);
@@ -195,6 +196,20 @@ export default function CardsScreen() {
         </View>
     );
 
+    React.useEffect(() => {
+        const catId = params?.category;
+        const q = params?.q;
+        const openFilter = params?.openFilter === '1';
+        if (catId) {
+            const matched = categories.find(c => c.id === catId);
+            if (matched) setSelectedCategory(matched.name);
+        }
+        if (typeof q === 'string') {
+            setSearchText(String(q));
+        }
+        if (openFilter) setFilterVisible(true);
+    }, [params?.category, params?.q, params?.openFilter, categories]);
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
@@ -228,12 +243,23 @@ export default function CardsScreen() {
                             placeholderTextColor={Colors.textSecondary}
                             value={searchText}
                             onChangeText={setSearchText}
+                            autoFocus={params?.focusSearch === '1'}
+                            clearButtonMode="while-editing"
                         />
+                        {searchText?.length ? (
+                            <TouchableOpacity onPress={() => setSearchText('')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                                <Ionicons name="close-circle" size={20} color={Colors.textSecondary} />
+                            </TouchableOpacity>
+                        ) : null}
                     </View>
                     <TouchableOpacity style={styles.filterButton} onPress={handleFilterPress}>
                         <Ionicons name="filter" size={22} color={Colors.textSecondary} />
                     </TouchableOpacity>
                 </View>
+
+                {searchText ? (
+                    <Text style={[styles.horizontalPadding, {color: Colors.textSecondary, fontFamily: Fonts.Poppins_Regular, marginBottom: 10}]}>Axtarış nəticəsi: “{searchText}”</Text>
+                ) : null}
 
                 <ScrollView
                     horizontal
