@@ -12,7 +12,7 @@ export default function PaymentScreen() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('card');
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const { brand, category, amount, recipientInfo } = params; 
+  const { brand, category, amount, recipientInfo, recipient } = params; 
 
   const paymentMethods = [
     {
@@ -44,29 +44,47 @@ export default function PaymentScreen() {
     
     setTimeout(() => {
       setIsProcessing(false);
-      CustomAlertManager.show({
-        title: 'Uğurlu ödəniş!',
-        message: 'Hədiyyə kartınız uğurla yaradıldı və qəbul edənə göndərildi.',
-        type: 'success',
-        buttons: [
-          {
-            text: 'Tamam',
-            onPress: async () => {
-              try {
-                await AsyncStorage.setItem('hasGifts', 'true');
-                const now = new Date();
-                await AsyncStorage.setItem('lastGift', JSON.stringify({
-                  amount: amount,
-                  brand: brand,
-                  category: category,
-                  time: now.toISOString(),
-                }));
-              } catch {}
-              router.replace('/(tabs)/profile');
+      if (recipient === 'self') {
+        CustomAlertManager.show({
+          title: 'Uğurlu ödəniş!',
+          message: 'Kartınız hazırdır.',
+          type: 'success',
+          buttons: [
+            {
+              text: 'Profilə keç',
+              onPress: async () => {
+                try {
+                  await AsyncStorage.setItem('hasGifts', 'true');
+                  const now = new Date();
+                  await AsyncStorage.setItem('lastGift', JSON.stringify({
+                    amount: amount,
+                    brand: brand,
+                    category: category,
+                    time: now.toISOString(),
+                  }));
+                } catch {}
+                router.replace('/(tabs)/profile');
+              }
             }
-          }
-        ]
-      });
+          ]
+        });
+      } else {
+        const now = new Date();
+        const payload = {
+          amount: String(amount),
+          brand,
+          category,
+          time: now.toISOString(),
+        };
+        const json = JSON.stringify(payload);
+        let token = '';
+        try {
+          token = encodeURIComponent(global.btoa ? global.btoa(json) : json);
+        } catch {
+          token = encodeURIComponent(json);
+        }
+        router.replace({ pathname: '/gift-purchase/share', params: { token } });
+      }
     }, 2000);
   };
 

@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import {
     Keyboard,
@@ -19,9 +19,10 @@ export default function LoginScreen() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [remember, setRemember] = useState(false);
     const router = useRouter();
+    const params = useLocalSearchParams();
 
     const [password, setPassword] = useState('');
-    const [identifier, setIdentifier] = useState(''); // email və ya phone
+    const [identifier, setIdentifier] = useState(''); 
 
     const isStrongPassword = useCallback((value) => value.trim().length >= 6, []);
     const [touched, setTouched] = useState({ password: false, identifier: false });
@@ -83,13 +84,17 @@ export default function LoginScreen() {
 
             const user = JSON.parse(savedUser);
 
-            // identifier ya email, ya phone ola bilər
             const matchesEmail = user.email === identifier;
             const matchesPhone = user.phone === identifier;
 
             if ((matchesEmail || matchesPhone) && user.password === password) {
                 await AsyncStorage.setItem("loggedIn", "true"); 
-                router.replace("/(tabs)/home");
+                const redirect = params?.redirect;
+                if (redirect) {
+                    router.replace(String(redirect));
+                } else {
+                    router.replace("/(tabs)/home");
+                }
             } else {
                 CustomAlertManager.show({
                     title: "Xəta",
