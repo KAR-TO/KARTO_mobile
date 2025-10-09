@@ -15,4 +15,20 @@ export default function CommunityScreen() {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  scrollContent: {
+    padding: 16,
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  subHeader: {
+    fontSize: 16,
+    color: '#666',
+  },  
 });
