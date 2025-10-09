@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#f8f9fa',
     },
     header: {
-        paddingTop: Platform.OS === 'ios' ? 10 : 40,
+        paddingTop: Platform.OS === 'ios' ? 10 : 50,
         paddingBottom: 10,
         paddingHorizontal: 12,
         backgroundColor: 'linear-gradient(135deg, #77BFA3 0%, #5EA88A 100%)',

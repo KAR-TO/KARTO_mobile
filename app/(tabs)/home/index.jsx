@@ -10,9 +10,10 @@ export default function HomeScreen() {
     const router = useRouter();
     const [searchText, setSearchText] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('Geyim mağazaları');
-    
+
 
     const categories = [
+        { id: 'all', name: 'Hamısı', icon: 'grid-outline' },
         { id: 'clothing', name: 'Geyim', icon: 'shirt-outline', active: true },
         { id: 'books', name: 'Kitab', icon: 'book-outline', active: false },
         { id: 'markets', name: 'Market', icon: 'basket-outline', active: false },
@@ -50,16 +51,15 @@ export default function HomeScreen() {
         router.push({ pathname: '/(tabs)/wallets', params: { openFilter: '1' } });
     };
 
-    
+
 
     return (
-
         <ScrollView
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.categoriesContent}
         >
             <View style={styles.container}>
-                <View style={styles.searchContainer}>
+                <View style={[styles.searchContainer, styles.horizontalPadding]}>
                     <View style={styles.searchBar}>
                         <Ionicons name="search" size={20} color={Colors.textSecondary} />
                         <TextInput
@@ -83,6 +83,8 @@ export default function HomeScreen() {
                 <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
+                    style={styles.categoriesContainer}
+                    contentContainerStyle={styles.categoriesContentContainer}
                 >
                     {categories.map((category) => (
                         <TouchableOpacity
@@ -108,7 +110,7 @@ export default function HomeScreen() {
                     ))}
                 </ScrollView>
 
-                <View style={styles.kartoCardSection}>
+                <View style={[styles.kartoCardSection, styles.horizontalPadding]}>
                     <View style={styles.kartoCard}>
                         <View style={styles.kartoHeader}>
                             <Image
@@ -136,22 +138,26 @@ export default function HomeScreen() {
                     </View>
                 </View>
             </View>
-            
-            
+
+
         </ScrollView>
 
     );
 }
 
 const styles = StyleSheet.create({
+    horizontalPadding: {
+        paddingHorizontal: 12,
+    },
     categoriesContent: {
         paddingBottom: 80,
+        paddingTop: Platform.OS === 'android' ? 50 : 10,
+
     },
     container: {
         flex: 1,
         backgroundColor: '#f8f9fa',
-        padding: 15,
-        paddingTop: Platform.OS === 'android' ? 40 : 10,
+        // padding: 15,
     },
     searchContainer: {
         flexDirection: 'row',
@@ -183,17 +189,32 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginLeft: 12,
     },
+     categoriesContainer: {
+        marginBottom: 20,
+        paddingBottom: 5,
+    },
+    categoriesContentContainer: {
+        paddingHorizontal: 12,
+    },
     categoryButton: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#fff',
-        borderRadius: 15,
-        paddingHorizontal: 10,
-        paddingVertical: 8,
+        borderRadius: 25,
+        paddingHorizontal: 15,
+        paddingVertical: 10,
         borderWidth: 1,
-        borderColor: '#aaa',
+        borderColor: 'rgba(0,0,0,0.08)',
         gap: 5,
-        marginRight: 5,
+        marginRight: 7,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 6,
+        },
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+        elevation: 5,
     },
     categoryButtonActive: {
         backgroundColor: Colors.primary,
@@ -222,7 +243,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 8,
         elevation: 8,
-        paddingTop:0,
+        paddingTop: 0,
     },
     kartoHeader: {
         alignItems: 'center',
@@ -265,7 +286,7 @@ const styles = StyleSheet.create({
         fontFamily: Fonts.Poppins_SemiBold,
         color: '#fff',
     },
-    
+
     logoutButton: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -282,5 +303,5 @@ const styles = StyleSheet.create({
         fontFamily: Fonts.Poppins_SemiBold,
         color: '#fff',
     },
-    
+
 });
