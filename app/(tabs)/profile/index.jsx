@@ -2,15 +2,17 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { CustomAlertManager } from '../../../components/CustomAlert';
 import { Colors, Fonts } from '../../../constants/theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [hasGifts, setHasGifts] = useState(false);
   const [lastGift, setLastGift] = useState(null);
+  const [activeSegment, setActiveSegment] = useState('sent');
 
   useEffect(() => {
     checkAuthStatus();
@@ -23,7 +25,7 @@ export default function ProfileScreen() {
         router.replace('/(auth)/login');
         return;
       }
-      
+
       const userData = await AsyncStorage.getItem('user');
       if (userData) {
         setUser(JSON.parse(userData));
@@ -50,11 +52,43 @@ export default function ProfileScreen() {
           text: 'Çıx',
           onPress: async () => {
             try {
-              await AsyncStorage.removeItem('loggedIn');
-              await AsyncStorage.removeItem('user');
               router.replace('/(auth)/login');
             } catch (error) {
               console.log('Logout error:', error);
+            }
+          }
+        }
+      ]
+    });
+  };
+
+  const handleClearGifts = async () => {
+    CustomAlertManager.show({
+      title: 'Hədiyyələri sil',
+      message: 'Bütün hədiyyə məlumatlarını silmək istədiyinizə əminsiniz?',
+      type: 'warning',
+      buttons: [
+        { text: 'Ləğv et', style: 'cancel' },
+        {
+          text: 'Sil',
+          onPress: async () => {
+            try {
+              await AsyncStorage.removeItem('hasGifts');
+              await AsyncStorage.removeItem('lastGift');
+              setHasGifts(false);
+              setLastGift(null);
+              CustomAlertManager.show({
+                title: 'Uğurlu',
+                message: 'Hədiyyə məlumatları silindi.',
+                type: 'success'
+              });
+            } catch (error) {
+              console.log('Clear gifts error:', error);
+              CustomAlertManager.show({
+                title: 'Xəta',
+                message: 'Hədiyyə məlumatları silinərkən xəta baş verdi.',
+                type: 'error'
+              });
             }
           }
         }
@@ -99,25 +133,31 @@ export default function ProfileScreen() {
 
 
   return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {!hasGifts ? (
           <>
             <View style={styles.emptyCardWrapper}>
               <View style={styles.emptyCard}>
                 <Ionicons name="card" size={36} color={Colors.primary} />
-                <Text style={styles.emptyText}>Hələ heçnə hədiyyə etməmisiniz</Text>
+                <Text style={styles.emptyText}>
+                  {activeSegment === 'sent' ? 'Hələ heçnə hədiyyə etməmisiniz' : 'Heç bir hədiyyə almamısınız'}
+                </Text>
+
                 <TouchableOpacity style={styles.emptyFixButton} onPress={() => router.push('/(tabs)/wallets')}>
                   <Text style={styles.emptyFixText}>Düzəltmək</Text>
                 </TouchableOpacity>
               </View>
               <View style={styles.segmentRow}>
-                <View style={[styles.segmentBtn, styles.segmentActive]}>
+                <TouchableOpacity onPress={() => setActiveSegment('sent')} style={[styles.segmentBtn, activeSegment === 'sent' && styles.segmentActive]}>
                   <Text style={styles.segmentActiveText}>Göndərilib</Text>
-                </View>
-                <View style={[styles.segmentBtn, styles.segmentPassive]}>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setActiveSegment('received')} style={[styles.segmentBtn, activeSegment === 'received' && styles.segmentActive]}>
                   <Text style={styles.segmentPassiveText}>Alınıb</Text>
-                </View>
+                </TouchableOpacity>
               </View>
             </View>
 
@@ -125,22 +165,20 @@ export default function ProfileScreen() {
               <Text style={styles.recommendTitle}>Tövsiyə edirik</Text>
             </View>
             <View style={styles.recommendList}>
-              {recommendedCards.slice(0,3).map((card) => (
+              {recommendedCards.slice(0, 3).map((card) => (
                 <View key={card.id} style={{ marginBottom: 18 }}>
                   <View style={[styles.recommendCard, { backgroundColor: card.backgroundColor }]}>
+                    <Text style={styles.recommendBrand}>{card.title}</Text>
                     <View style={styles.recommendCardTop}>
                       <Image source={card.image} style={styles.recommendImage} resizeMode="contain" />
-                      <Ionicons name="flame" size={16} color={Colors.warning} />
                     </View>
-                    <View style={styles.recommendBottom}>
-                      <Text style={styles.recommendBrand}>{card.title}</Text>
+                    <View style={styles.recommendPriceButton}>
                       <Text style={styles.recommendPrice}>{card.price}</Text>
                     </View>
                     <TouchableOpacity style={styles.buyButton} onPress={() => handleBuyRecommend(card)}>
                       <Text style={styles.buyButtonText}>Satın al</Text>
                     </TouchableOpacity>
                   </View>
-                  <Text style={styles.recommendCaption}>“{card.title}”</Text>
                 </View>
               ))}
             </View>
@@ -159,9 +197,9 @@ export default function ProfileScreen() {
                 <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Məbləğ</Text>
               </View>
               {([
-                lastGift ? {id:'0001', date:new Date(lastGift.time).toLocaleDateString('az-AZ')+'\n'+new Date(lastGift.time).toLocaleTimeString('az-AZ', {hour:'2-digit', minute:'2-digit'}), amount:`${lastGift.amount}₼`, product:`${lastGift.brand}`, buyer:user?.username || '—'} : null,
-                {id:'1821', date:'21.03.2025\n15:55', amount:'500₼', product:'Karto x Puma', buyer:'B.Əlişən'},
-                {id:'1950', date:'27.03.2025\n14:55', amount:'50₼', product:'Karto x Alinino', buyer:'Y. Yaqub'},
+                lastGift ? { id: '0001', date: new Date(lastGift.time).toLocaleDateString('az-AZ') + '\n' + new Date(lastGift.time).toLocaleTimeString('az-AZ', { hour: '2-digit', minute: '2-digit' }), amount: `${lastGift.amount}₼`, product: `${lastGift.brand}`, buyer: user?.username || '—' } : null,
+                { id: '1821', date: '21.03.2025\n15:55', amount: '500₼', product: 'Karto x Puma', buyer: 'B.Əlişən' },
+                { id: '1950', date: '27.03.2025\n14:55', amount: '50₼', product: 'Karto x Alinino', buyer: 'Y. Yaqub' },
               ].filter(Boolean)).map((row) => (
                 <View key={row.id} style={styles.tableRow}>
                   <Text style={[styles.tableCell, { flex: 1 }]}>{row.id}</Text>
@@ -176,9 +214,9 @@ export default function ProfileScreen() {
               </View>
 
               {([
-                lastGift ? {product: lastGift.brand, buyer: user?.username || '—'} : null,
-                {product: 'Karto x Puma', buyer: 'B.Əlişən'},
-                {product: 'Karto x Alinino', buyer: 'Y. Yaqub'},
+                lastGift ? { product: lastGift.brand, buyer: user?.username || '—' } : null,
+                { product: 'Karto x Puma', buyer: 'B.Əlişən' },
+                { product: 'Karto x Alinino', buyer: 'Y. Yaqub' },
               ].filter(Boolean)).map((row, idx) => (
                 <View key={idx} style={styles.subRow}>
                   <Text style={[styles.subCell, { flex: 2 }]}>{row.product}</Text>
@@ -188,12 +226,12 @@ export default function ProfileScreen() {
             </View>
 
             <View style={styles.segmentRow}>
-              <View style={[styles.segmentBtn, styles.segmentActive]}>
+              <TouchableOpacity style={[styles.segmentBtn, styles.segmentActive]}>
                 <Text style={styles.segmentActiveText}>Göndərilib</Text>
-              </View>
-              <View style={[styles.segmentBtn, styles.segmentPassive]}>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.segmentBtn, styles.segmentPassive]}>
                 <Text style={styles.segmentPassiveText}>Alınıb</Text>
-              </View>
+              </TouchableOpacity>
             </View>
 
             <View style={styles.ctaRow}>
@@ -204,28 +242,32 @@ export default function ProfileScreen() {
                 <Text style={styles.logoutOutlinedText}>Profildən çıxış</Text>
               </TouchableOpacity>
             </View>
+
+            <View style={styles.debugSection}>
+              <TouchableOpacity style={styles.clearGiftsBtn} onPress={handleClearGifts}>
+                <Text style={styles.clearGiftsText}>Hədiyyələri sil (Test üçün)</Text>
+              </TouchableOpacity>
+            </View>
           </>
         )}
 
         <Text style={styles.versionText}>KARTO v1.0.0</Text>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: '#f8f9fa',
-    paddingBottom: 100,
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 40,
+    paddingBottom: 100, 
   },
   emptyCardWrapper: {
     marginHorizontal: 20,
-    marginTop: 24,
   },
   emptyCard: {
     backgroundColor: '#eee',
@@ -253,7 +295,8 @@ const styles = StyleSheet.create({
   },
   segmentRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 12,
+    paddingHorizontal: 20,
   },
   segmentBtn: {
     flex: 1,
@@ -292,40 +335,43 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   recommendCard: {
-    borderRadius: 12,
+    backgroundColor: '#fff',
+    borderRadius: 20,
     padding: 16,
-    marginBottom: 12,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 4,
+
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
   },
   recommendCardTop: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     marginBottom: 16,
   },
   recommendImage: {
-    width: 40,
-    height: 40,
+    width: 150,
+    height: 90,
   },
-  recommendBottom: {
+  recommendPriceButton: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     alignItems: 'center',
   },
   recommendBrand: {
-    fontSize: 16,
+    fontSize: 18,
     fontFamily: Fonts.Poppins_SemiBold,
     color: Colors.textPrimary,
+    textAlign: 'center',
   },
   recommendPrice: {
-    fontSize: 14,
-    fontFamily: Fonts.Poppins_Regular,
-    color: Colors.textSecondary,
-  },
-  recommendCaption: {
-    textAlign: 'center',
-    marginTop: 6,
-    fontSize: 12,
-    color: Colors.textPrimary,
-    fontFamily: Fonts.Poppins_Regular,
+    fontSize: 20,
+    fontFamily: Fonts.Poppins_SemiBold,
+    color: Colors.primary,
   },
   buyButton: {
     backgroundColor: Colors.primary,
@@ -340,7 +386,7 @@ const styles = StyleSheet.create({
   },
 
   welcomeWrapper: {
-    paddingTop: 40,
+    paddingTop: Platform.OS === 'ios' ? 20 : 50,
     alignItems: 'center',
   },
   welcomeTitle: {
