@@ -56,7 +56,7 @@ export default function GiftAmountScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      {/* <ScrollView contentContainerStyle={styles.scrollContent}> */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
             <Ionicons name="arrow-back" size={22} color={Colors.textPrimary} />
@@ -142,7 +142,7 @@ export default function GiftAmountScreen() {
           <Text style={styles.continueButtonText}>Davam et</Text>
         </TouchableOpacity>
         
-      </ScrollView>
+      {/* </ScrollView> */}
     </View>
   );
 }
@@ -151,11 +151,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8f9fa',
-  },
-  scrollContent: {
-    flexGrow: 1,
     paddingBottom: 40,
   },
+  // scrollContent: {
+  //   flexGrow: 1,
+  //   paddingBottom: 40,
+  //   backgroundColor: '#f8f9fa',
+  // },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -165,7 +167,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   backButton: {
-    padding: 8,
+    // padding: 8,
   },
   headerTitle: {
     fontSize: 18,

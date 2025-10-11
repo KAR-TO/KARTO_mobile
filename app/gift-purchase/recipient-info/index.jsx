@@ -179,6 +179,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 40,
+    backgroundColor: '#f8f9fa',
   },
   header: {
     flexDirection: 'row',

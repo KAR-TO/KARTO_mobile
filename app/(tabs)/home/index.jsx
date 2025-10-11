@@ -152,7 +152,6 @@ const styles = StyleSheet.create({
     categoriesContent: {
         paddingBottom: 80,
         paddingTop: Platform.OS === 'android' ? 50 : 10,
-
     },
     container: {
         flex: 1,

@@ -1,6 +1,6 @@
 // Theme colors
 export const Colors = {
-  primary: "#77BFA3",
+  primary: "#99D1A4CC",
   // secondary: "#5AC8FA",
   success: "#99D1A4",
   disabled: "#C7C7CC",

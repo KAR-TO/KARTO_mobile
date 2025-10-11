@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import {
     Keyboard,
+    Platform,
     StyleSheet, Text, TextInput,
     TouchableOpacity,
     TouchableWithoutFeedback,
@@ -253,7 +254,7 @@ const styles = StyleSheet.create({
     },
     header: {
         alignItems: 'center',
-        marginTop: 40,
+        marginTop: Platform.OS === 'android' ? 60 : 30,
         marginBottom: 25,
     },
     logoContainer: {
