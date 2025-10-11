@@ -45,6 +45,7 @@ const getGradientColors = (type) => {
 class CustomAlertManager {
     static instance = null;
     static showAlert = null;
+    static pendingQueue = [];
 
     static getInstance() {
         if (!this.instance) {
@@ -58,12 +59,24 @@ class CustomAlertManager {
         if (this.showAlert) {
             this.showAlert({ title, message, type, buttons, onDismiss });
         } else {
-            console.log('showAlert function not set yet');
+            console.log('showAlert function not set yet, queuing alert');
+            this.pendingQueue.push({ title, message, type, buttons, onDismiss });
         }
     }
 
     static setShowFunction(showFunction) {
         this.showAlert = showFunction;
+        if (this.showAlert && this.pendingQueue.length) {
+            const queued = [...this.pendingQueue];
+            this.pendingQueue = [];
+            queued.forEach((args) => {
+                try {
+                    this.showAlert(args);
+                } catch (err) {
+                    console.warn('Failed to show queued alert:', err);
+                }
+            });
+        }
     }
 }
 
@@ -214,11 +227,11 @@ const CustomAlert = () => {
                     >
                         <View style={styles.alertContent}>
                             <View style={styles.iconContainer}>
-                                <View style={[styles.iconBackground, { backgroundColor: getIconColor() + '20' }]}>
+                                <View style={[styles.iconBackground, { backgroundColor: getIconColor(alertData.type) + '20' }]}>
                                     <Ionicons
                                         name={getIconName(alertData.type)}
                                         size={32}
-                                        color={getIconColor()}
+                                        color={getIconColor(alertData.type)}
                                     />
                                 </View>
                             </View>

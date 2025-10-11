@@ -3,9 +3,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import AddKartoIcon from '../../../assets/images/addKartoIcon.png';
+import BackIcon from '../../../assets/images/backIcon.png';
 import { CustomAlertManager } from '../../../components/CustomAlert';
 import { Colors, Fonts } from '../../../constants/theme';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -52,6 +54,14 @@ export default function ProfileScreen() {
           text: 'Çıx',
           onPress: async () => {
             try {
+              // Clear auth flags so app doesn't treat the user as logged in after reload
+              await AsyncStorage.setItem('loggedIn', 'false');
+              // Optionally clear session-specific data
+              // await AsyncStorage.removeItem('user'); // Uncomment if you want full sign-out (no remembered user)
+
+              // Reset local state
+              setUser(null);
+
               router.replace('/(auth)/login');
             } catch (error) {
               console.log('Logout error:', error);
@@ -142,7 +152,13 @@ export default function ProfileScreen() {
           <>
             <View style={styles.emptyCardWrapper}>
               <View style={styles.emptyCard}>
-                <Ionicons name="card" size={36} color={Colors.primary} />
+                <Ionicons name="card" size={45} color={Colors.primary} />
+                {/* {activeSegment === 'sent' ? (
+                  <Image source={BankNoteIcon} style={{ width: 120, height: 120 }} />
+                ) : (
+                  <Image source={GiftIcon} style={{ width: 120, height: 120 }} />
+                )} */}
+
                 <Text style={styles.emptyText}>
                   {activeSegment === 'sent' ? 'Hələ heçnə hədiyyə etməmisiniz' : 'Heç bir hədiyyə almamısınız'}
                 </Text>
@@ -235,15 +251,23 @@ export default function ProfileScreen() {
             </View>
 
             <View style={styles.ctaRow}>
-              <TouchableOpacity style={styles.addKartoBtn} onPress={() => router.push('/(tabs)/wallets')}>
-                <Text style={styles.addKartoText}>“Karto” əlavə et</Text>
+              <TouchableOpacity
+                style={styles.addKartoBtn}
+                onPress={() => router.push('/(tabs)/wallets')}
+              >
+                <Image source={AddKartoIcon} style={styles.addKartoIcon} />
+                <Text style={styles.addKartoText}>Karto əlavə et</Text>
               </TouchableOpacity>
+
               <TouchableOpacity style={styles.logoutOutlined} onPress={handleLogout}>
+                <Image source={BackIcon} style={styles.backIcon} />
+                {/* <Backicon name="log-out-outline" size={24} color={Colors.error} style={{ marginRight: 8 }} /> */}
                 <Text style={styles.logoutOutlinedText}>Profildən çıxış</Text>
               </TouchableOpacity>
             </View>
 
-            <View style={styles.debugSection}>
+
+            <View style={[{ alignItems: 'center', marginBottom: 20 }]}>
               <TouchableOpacity style={styles.clearGiftsBtn} onPress={handleClearGifts}>
                 <Text style={styles.clearGiftsText}>Hədiyyələri sil (Test üçün)</Text>
               </TouchableOpacity>
@@ -264,7 +288,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 70, 
+    paddingBottom: 70,
   },
   emptyCardWrapper: {
     marginHorizontal: 20,
@@ -300,10 +324,12 @@ const styles = StyleSheet.create({
   },
   segmentBtn: {
     flex: 1,
-    height: 40,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 10,
     borderRadius: 10,
+    borderColor: Colors.primary,
+    borderWidth: 1,
   },
   segmentActive: {
     backgroundColor: Colors.primary,
@@ -321,7 +347,7 @@ const styles = StyleSheet.create({
   },
 
   recommendHeader: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 12,
     marginTop: 20,
     marginBottom: 10,
   },
@@ -332,7 +358,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   recommendList: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 12,
   },
   recommendCard: {
     backgroundColor: '#fff',
@@ -455,38 +481,55 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.Poppins_Regular,
     color: Colors.textPrimary,
   },
-
   ctaRow: {
     flexDirection: 'row',
-    gap: 12,
     paddingHorizontal: 20,
-    marginTop: 10,
+    marginTop: 40,
     marginBottom: 20,
+    alignItems: 'center',
+    justifyContent: 'space-between', 
   },
   addKartoBtn: {
-    flex: 1,
-    backgroundColor: '#fff',
-    borderColor: Colors.textSecondary,
-    borderWidth: 1,
+    flexDirection: 'row',
+    backgroundColor: Colors.primary,
     borderRadius: 12,
     paddingVertical: 14,
+    paddingHorizontal: 16,
     alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10, 
+  },
+  addKartoIcon: {
+    width: 24,
+    height: 24,
+    marginRight: 8, 
   },
   addKartoText: {
-    color: Colors.textPrimary,
+    color: '#fff',
     fontFamily: Fonts.Poppins_Regular,
+    fontSize: 16,
+    lineHeight: 24,
   },
   logoutOutlined: {
-    flex: 1,
     borderColor: Colors.error,
     borderWidth: 1,
     borderRadius: 12,
     paddingVertical: 14,
+    paddingHorizontal: 16,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  backIcon: {
+    width: 24,
+    height: 24,
+    marginRight: 8, 
   },
   logoutOutlinedText: {
     color: Colors.error,
     fontFamily: Fonts.Poppins_Regular,
+    fontSize: 16,
+    lineHeight: 24,
   },
   versionText: {
     fontSize: 12,

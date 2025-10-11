@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         width: '100%',
         height: '100%',
-        backgroundColor: `${Colors.primary}15`, 
+        backgroundColor: `${Colors.success}15`, 
         borderRadius: 12,
     },
 
@@ -280,7 +280,8 @@ const styles = StyleSheet.create({
         shadowRadius: 12,
         elevation: 15,
         borderWidth: Platform.OS === 'ios' ? 3 : 2,
-        borderColor: `${Colors.primary}20`,
+        // Colors.primary already includes alpha; using it with extra alpha suffix yields invalid color and Android defaults to black
+        borderColor: `${Colors.success}20`,
         ...Platform.select({
             ios: {
                 shadowColor: Colors.primary,
