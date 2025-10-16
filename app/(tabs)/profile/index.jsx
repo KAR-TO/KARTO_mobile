@@ -8,6 +8,8 @@ import AddKartoIcon from '../../../assets/images/addKartoIcon.png';
 import BackIcon from '../../../assets/images/backIcon.png';
 import { CustomAlertManager } from '../../../components/CustomAlert';
 import { Colors, Fonts } from '../../../constants/theme';
+import BankNoteIcon from '../../../assets/images/banknoteIcon.png';
+import GiftIcon from '../../../assets/images/giftIcon.png';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -152,12 +154,11 @@ export default function ProfileScreen() {
           <>
             <View style={styles.emptyCardWrapper}>
               <View style={styles.emptyCard}>
-                <Ionicons name="card" size={45} color={Colors.primary} />
-                {/* {activeSegment === 'sent' ? (
-                  <Image source={BankNoteIcon} style={{ width: 120, height: 120 }} />
+                {activeSegment === 'sent' ? (
+                  <Image source={BankNoteIcon} style={{ width: 100, height: 100 }} />
                 ) : (
-                  <Image source={GiftIcon} style={{ width: 120, height: 120 }} />
-                )} */}
+                  <Image source={GiftIcon} style={{ width: 100, height: 100 }} />
+                )}
 
                 <Text style={styles.emptyText}>
                   {activeSegment === 'sent' ? 'Hələ heçnə hədiyyə etməmisiniz' : 'Heç bir hədiyyə almamısınız'}

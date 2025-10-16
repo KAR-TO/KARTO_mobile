@@ -3,13 +3,12 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import CustomAlert from '../components/CustomAlert';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     MPlusRegular: require('../assets/fonts/MPLUS1-Regular.ttf'),
     PoppinsRegular: require('../assets/fonts/Poppins-Regular.ttf'),
@@ -27,7 +26,7 @@ export default function RootLayout() {
   }
 
   return (
-    <>
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="splash" />
@@ -39,6 +38,6 @@ export default function RootLayout() {
       </Stack>
       <StatusBar style="auto" />
       <CustomAlert />
-    </>
+    </GestureHandlerRootView>
   );
 }

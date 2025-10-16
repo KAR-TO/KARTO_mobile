@@ -2,9 +2,12 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { Image, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, StatusBar, Dimensions } from 'react-native';
 import CustomButton from '../../../components/CustomButton';
 import { Colors, Fonts } from '../../../constants/theme';
+
+
+const { height } = Dimensions.get('window');
 
 export default function HomeScreen() {
     const router = useRouter();
@@ -56,8 +59,18 @@ export default function HomeScreen() {
     return (
         <ScrollView
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoriesContent}
+            contentContainerStyle={[styles.categoriesContent, {
+                paddingTop:
+                    Platform.OS === 'android'
+                        ? height * 0.04 
+                        : height * 0.02,
+            }]}
         >
+            <StatusBar
+                translucent={Platform.OS === 'android'}
+                backgroundColor={Platform.OS === 'android' ? 'transparent' : undefined}
+                barStyle='dark-content'
+            />
             <View style={styles.container}>
                 <View style={[styles.searchContainer, styles.horizontalPadding]}>
                     <View style={styles.searchBar}>
@@ -151,7 +164,7 @@ const styles = StyleSheet.create({
     },
     categoriesContent: {
         paddingBottom: 80,
-        paddingTop: Platform.OS === 'android' ? 50 : 10,
+        backgroundColor: '#f8f9fa',
     },
     container: {
         flex: 1,
@@ -188,8 +201,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginLeft: 12,
     },
-     categoriesContainer: {
-        marginBottom: 20,
+    categoriesContainer: {
         paddingBottom: 5,
     },
     categoriesContentContainer: {
@@ -200,8 +212,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#fff',
         borderRadius: 25,
-        paddingHorizontal: 15,
-        paddingVertical: 10,
+        paddingHorizontal: 10,
+        paddingVertical: 7,
         borderWidth: 1,
         borderColor: 'rgba(0,0,0,0.08)',
         gap: 5,
@@ -228,7 +240,7 @@ const styles = StyleSheet.create({
         color: '#fff',
     },
     kartoCardSection: {
-        marginTop: 10,
+        marginTop: 5,
     },
     kartoCard: {
         backgroundColor: '#fff',
