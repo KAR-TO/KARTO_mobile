@@ -148,7 +148,7 @@ const FilterScreen = ({ visible, onClose, onApplyFilters }) => {
             onBackdropPress={onClose}
             onBackButtonPress={onClose}
             style={styles.modal}
-            animationIn="slideInUp"       
+            animationIn="slideInUp"
             animationOut="slideOutDown"
             animationInTiming={800}
             animationOutTiming={600}
@@ -162,7 +162,7 @@ const FilterScreen = ({ visible, onClose, onApplyFilters }) => {
             <View style={styles.modalContainer}>
                 {/* Header */}
                 <LinearGradient
-                    colors={['#77BFA3', '#5EA88A']}
+                    colors={["#B6EBC1", "#99D1A4", "#7DC490"]}
                     style={styles.header}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
@@ -392,7 +392,7 @@ const FilterScreen = ({ visible, onClose, onApplyFilters }) => {
                         activeOpacity={0.8}
                     >
                         <LinearGradient
-                            colors={['#77BFA3', '#5EA88A']}
+                            colors={["#7DC490", "#99D1A4", "#aaebb7ff"]}
                             style={styles.applyButton}
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 1 }}

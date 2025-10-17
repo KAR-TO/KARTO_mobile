@@ -19,11 +19,12 @@ export default function LoginScreen() {
     const [toggleSecureEntry, setToggleSecureEntry] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [remember, setRemember] = useState(false);
+    const [focusedField, setFocusedField] = useState(null); // 'identifier' | 'password' | null
     const router = useRouter();
     const params = useLocalSearchParams();
 
     const [password, setPassword] = useState('');
-    const [identifier, setIdentifier] = useState(''); 
+    const [identifier, setIdentifier] = useState('');
 
     const isStrongPassword = useCallback((value) => value.trim().length >= 6, []);
     const [touched, setTouched] = useState({ password: false, identifier: false });
@@ -89,7 +90,10 @@ export default function LoginScreen() {
             const matchesPhone = user.phone === identifier;
 
             if ((matchesEmail || matchesPhone) && user.password === password) {
-                await AsyncStorage.setItem("loggedIn", "true"); 
+                await Promise.all([
+                    AsyncStorage.setItem("loggedIn", "true"),
+                    AsyncStorage.setItem("hasSeenOnboarding", "true"),
+                ]);
                 const redirect = params?.redirect;
                 if (redirect) {
                     router.replace(String(redirect));
@@ -103,7 +107,8 @@ export default function LoginScreen() {
                     type: "error"
                 });
             }
-        } catch (_error) {
+        } catch (error) {
+            console.log('Login error:', error?.message);
             CustomAlertManager.show({
                 title: "Xəta",
                 message: "Daxil olmaq alınmadı.",
@@ -139,11 +144,15 @@ export default function LoginScreen() {
                     <View style={styles.formContainer}>
                         <View style={styles.inputContainer}>
                             <Text style={styles.label}>Email və ya Telefon</Text>
-                            <View style={[styles.inputWrapper, identifierError && styles.inputError]}>
-                                <Ionicons 
-                                    name="person-outline" 
-                                    size={20} 
-                                    color={identifierError ? Colors.error : Colors.textSecondary} 
+                            <View style={[
+                                styles.inputWrapper,
+                                identifierError && styles.inputError,
+                                focusedField === 'identifier' && styles.inputFocused,
+                            ]}>
+                                <Ionicons
+                                    name="person-outline"
+                                    size={20}
+                                    color={identifierError ? Colors.error : Colors.textSecondary}
                                     style={styles.inputIcon}
                                 />
                                 <TextInput
@@ -154,6 +163,8 @@ export default function LoginScreen() {
                                     value={identifier}
                                     onChangeText={setIdentifier}
                                     onBlur={onBlurIdentifier}
+                                    onFocus={() => setFocusedField('identifier')}
+                                    onEndEditing={() => setFocusedField(null)}
                                 />
                             </View>
                             {identifierError ? <Text style={styles.errorText}>{identifierError}</Text> : null}
@@ -161,11 +172,15 @@ export default function LoginScreen() {
 
                         <View style={styles.inputContainer}>
                             <Text style={styles.label}>Şifrə</Text>
-                            <View style={[styles.inputWrapper, passwordError && styles.inputError]}>
-                                <Ionicons 
-                                    name="lock-closed-outline" 
-                                    size={20} 
-                                    color={passwordError ? Colors.error : Colors.textSecondary} 
+                            <View style={[
+                                styles.inputWrapper,
+                                passwordError && styles.inputError,
+                                focusedField === 'password' && styles.inputFocused,
+                            ]}>
+                                <Ionicons
+                                    name="lock-closed-outline"
+                                    size={20}
+                                    color={passwordError ? Colors.error : Colors.textSecondary}
                                     style={styles.inputIcon}
                                 />
                                 <TextInput
@@ -175,6 +190,8 @@ export default function LoginScreen() {
                                     style={styles.input}
                                     secureTextEntry={toggleSecureEntry}
                                     onBlur={onBlurPassword}
+                                    onFocus={() => setFocusedField('password')}
+                                    onEndEditing={() => setFocusedField(null)}
                                     value={password}
                                     onChangeText={setPassword}
                                 />
@@ -193,7 +210,7 @@ export default function LoginScreen() {
                         </View>
 
                         <View style={styles.optionsContainer}>
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 style={styles.rememberContainer}
                                 onPress={() => setRemember(!remember)}
                             >
@@ -202,7 +219,7 @@ export default function LoginScreen() {
                                 </View>
                                 <Text style={styles.rememberText}>Məni xatırla</Text>
                             </TouchableOpacity>
-                            
+
                             <TouchableOpacity>
                                 <Text style={styles.forgotText}>Şifrəni unutdum?</Text>
                             </TouchableOpacity>
@@ -251,14 +268,15 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#f8f9fa',
         paddingHorizontal: 20,
+        paddingBottom: 20,
     },
     header: {
         alignItems: 'center',
         marginTop: Platform.OS === 'android' ? 60 : 30,
-        marginBottom: 25,
+        marginBottom: 10,
     },
     logoContainer: {
-        marginBottom: 15,
+        marginBottom: 12,
     },
     logoCircle: {
         width: 60,
@@ -272,8 +290,8 @@ const styles = StyleSheet.create({
             width: 0,
             height: 4,
         },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
+        shadowOpacity: 0.25,
+        shadowRadius: 10,
         elevation: 8,
     },
     logoText: {
@@ -283,21 +301,33 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     welcomeText: {
-        fontSize: 22,
+        fontSize: 24,
         fontFamily: Fonts.Poppins_SemiBold,
         color: Colors.primary,
         marginBottom: 6,
     },
     subtitleText: {
-        fontSize: 14,
+        fontSize: 13,
         fontFamily: Fonts.Poppins_Regular,
         color: Colors.textSecondary,
     },
+    formCard: {
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        marginHorizontal: 8,
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.06,
+        shadowRadius: 16,
+        elevation: 3,
+    },
     formContainer: {
-        marginBottom: 20,
+        marginBottom: 8,
     },
     inputContainer: {
-        marginBottom: 15,
+        marginBottom: 14,
     },
     label: {
         fontSize: 13,
@@ -313,15 +343,24 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: Colors.border,
         paddingHorizontal: 14,
-        height: 48,
+        height: 52,
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
             height: 1,
         },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
-        elevation: 1,
+        shadowOpacity: 0.04,
+        shadowRadius: 3,
+        elevation: 0,
+    },
+    inputFocused: {
+        borderColor: Colors.primary,
+        borderWidth: 1.5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+        elevation: 2,
     },
     inputError: {
         borderColor: Colors.error,
@@ -336,7 +375,7 @@ const styles = StyleSheet.create({
         fontFamily: Fonts.Poppins_Regular,
     },
     eyeIcon: {
-        padding: 4,
+        padding: 8,
     },
     errorText: {
         marginTop: 4,
@@ -348,7 +387,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginTop: 8,
+        marginTop: 10,
+        marginBottom: 6,
     },
     rememberContainer: {
         flexDirection: 'row',
@@ -379,13 +419,15 @@ const styles = StyleSheet.create({
         color: Colors.primary,
     },
     buttonContainer: {
-        marginBottom: 20,
+        marginTop: 4,
+        marginBottom: 4,
     },
     registerContainer: {
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 20,
+        marginTop: 16,
+        marginBottom: 18,
     },
     registerText: {
         color: Colors.textSecondary,
@@ -425,7 +467,7 @@ const styles = StyleSheet.create({
             width: 0,
             height: 2,
         },
-        shadowOpacity: 0.1,
+        shadowOpacity: 0.2,
         shadowRadius: 4,
         elevation: 3,
     },
