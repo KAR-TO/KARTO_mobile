@@ -19,6 +19,7 @@ export default function RegisterScreen() {
     const [toggleSecureEntry, setToggleSecureEntry] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const router = useRouter();
+    const [focusedField, setFocusedField] = useState(null); // 'identifier' | 'password' | null
 
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -36,11 +37,11 @@ export default function RegisterScreen() {
     const [selectedCountry, setSelectedCountry] = useState(countries[0]);
 
     const isStrongPassword = useCallback((value) => value.trim().length >= 6, []);
-    const [touched, setTouched] = useState({ 
-        username: false, 
-        password: false, 
-        email: false, 
-        phone: false 
+    const [touched, setTouched] = useState({
+        username: false,
+        password: false,
+        email: false,
+        phone: false
     });
 
     const usernameError = useMemo(() => {
@@ -109,6 +110,7 @@ export default function RegisterScreen() {
             };
 
             await AsyncStorage.setItem("user", JSON.stringify(user));
+            await AsyncStorage.setItem("hasSeenOnboarding", "true");
 
             CustomAlertManager.show({
                 title: 'Uğur',
@@ -156,11 +158,15 @@ export default function RegisterScreen() {
                     <View style={styles.formContainer}>
                         <View style={styles.inputContainer}>
                             <Text style={styles.label}>Tam adınız</Text>
-                            <View style={[styles.inputWrapper, usernameError && styles.inputError]}>
-                                <Ionicons 
-                                    name="person-outline" 
-                                    size={20} 
-                                    color={usernameError ? Colors.error : Colors.textSecondary} 
+                            <View style={[
+                                styles.inputWrapper,
+                                usernameError && styles.inputError,
+                                focusedField === 'username' && styles.inputFocused,
+                            ]}>
+                                <Ionicons
+                                    name="person-outline"
+                                    size={20}
+                                    color={usernameError ? Colors.error : Colors.textSecondary}
                                     style={styles.inputIcon}
                                 />
                                 <TextInput
@@ -171,6 +177,8 @@ export default function RegisterScreen() {
                                     onBlur={onBlurUserName}
                                     value={username}
                                     onChangeText={setUsername}
+                                    onFocus={() => setFocusedField('username')}
+                                    onEndEditing={() => setFocusedField(null)}
                                 />
                             </View>
                             {usernameError ? <Text style={styles.errorText}>{usernameError}</Text> : null}
@@ -178,11 +186,15 @@ export default function RegisterScreen() {
 
                         <View style={styles.inputContainer}>
                             <Text style={styles.label}>Elektron poçt</Text>
-                            <View style={[styles.inputWrapper, emailError && styles.inputError]}>
-                                <Ionicons 
-                                    name="mail-outline" 
-                                    size={20} 
-                                    color={emailError ? Colors.error : Colors.textSecondary} 
+                            <View style={[
+                                styles.inputWrapper,
+                                emailError && styles.inputError,
+                                focusedField === 'email' && styles.inputFocused,
+                            ]}>
+                                <Ionicons
+                                    name="mail-outline"
+                                    size={20}
+                                    color={emailError ? Colors.error : Colors.textSecondary}
                                     style={styles.inputIcon}
                                 />
                                 <TextInput
@@ -193,6 +205,8 @@ export default function RegisterScreen() {
                                     value={email}
                                     onChangeText={setEmail}
                                     onBlur={onBlurEmail}
+                                    onFocus={() => setFocusedField('email')}
+                                    onEndEditing={() => setFocusedField(null)}
                                 />
                             </View>
                             {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
@@ -214,7 +228,7 @@ export default function RegisterScreen() {
                                     value={phoneNumber}
                                     onChangeText={(text) => {
                                         const max = selectedCountry.code === '+994' ? 9 : 12;
-                                        const digits = text.replace(/\D/g, '').slice(0, max);
+                                        const digits = text.replaceAll(/\D/g, '').slice(0, max);
                                         setPhoneNumber(digits);
                                     }}
                                     onBlur={onBlurPhone}
@@ -226,11 +240,15 @@ export default function RegisterScreen() {
 
                         <View style={styles.inputContainer}>
                             <Text style={styles.label}>Şifrə</Text>
-                            <View style={[styles.inputWrapper, passwordError && styles.inputError]}>
-                                <Ionicons 
-                                    name="lock-closed-outline" 
-                                    size={20} 
-                                    color={passwordError ? Colors.error : Colors.textSecondary} 
+                            <View style={[
+                                styles.inputWrapper, 
+                                passwordError && styles.inputError,
+                                focusedField === 'password' && styles.inputFocused,
+                            ]}>
+                                <Ionicons
+                                    name="lock-closed-outline"
+                                    size={20}
+                                    color={passwordError ? Colors.error : Colors.textSecondary}
                                     style={styles.inputIcon}
                                 />
                                 <TextInput
@@ -242,6 +260,8 @@ export default function RegisterScreen() {
                                     onBlur={onBlurPassword}
                                     value={password}
                                     onChangeText={setPassword}
+                                    onFocus={() => setFocusedField('password')}
+                                    onEndEditing={() => setFocusedField(null)}
                                 />
                                 <TouchableOpacity
                                     style={styles.eyeIcon}
@@ -258,7 +278,7 @@ export default function RegisterScreen() {
                         </View>
 
                         <View style={styles.termsContainer}>
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 style={styles.checkboxContainer}
                                 onPress={() => setAcceptedTerms(!acceptedTerms)}
                             >
@@ -362,15 +382,15 @@ const styles = StyleSheet.create({
     },
     inputContainer: {
         marginBottom: 15,
-        overflow:'visible',
+        overflow: 'visible',
     },
     label: {
         fontSize: 13,
         color: Colors.textPrimary,
-        marginBottom: 6,
+        marginBottom: 2,
         fontFamily: Fonts.Poppins_SemiBold,
     },
-    inputWrapper: {
+     inputWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#fff',
@@ -378,15 +398,24 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: Colors.border,
         paddingHorizontal: 14,
-        height: 48,
+        height: 45,
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
             height: 1,
         },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
-        elevation: 1,
+        shadowOpacity: 0.04,
+        shadowRadius: 3,
+        elevation: 0,
+    },
+    inputFocused: {
+        borderColor: Colors.primary,
+        borderWidth: 1.5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+        elevation: 2,
     },
     inputError: {
         borderColor: Colors.error,
@@ -411,7 +440,7 @@ const styles = StyleSheet.create({
     },
     termsContainer: {
         marginTop: 8,
-        marginBottom: 15,
+        marginBottom: 10,
     },
     checkboxContainer: {
         flexDirection: 'row',
@@ -453,7 +482,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 20,
+        marginBottom: 5,
     },
     loginText: {
         color: Colors.textSecondary,
@@ -468,13 +497,12 @@ const styles = StyleSheet.create({
     },
     socialContainer: {
         alignItems: 'center',
-        marginBottom: 25,
     },
     socialText: {
         fontSize: 13,
         fontFamily: Fonts.Poppins_Regular,
         color: Colors.textSecondary,
-        marginBottom: 15,
+        marginBottom: 10,
     },
     socialButtons: {
         flexDirection: 'row',

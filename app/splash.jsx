@@ -11,9 +11,14 @@ export default function SplashScreen() {
     useEffect(() => {
         const checkAuthStatus = async () => {
             try {
-                const loggedIn = await AsyncStorage.getItem('loggedIn');
+                const [loggedIn, seen] = await Promise.all([
+                    AsyncStorage.getItem('loggedIn'),
+                    AsyncStorage.getItem('hasSeenOnboarding'),
+                ]);
                 const timer = setTimeout(() => {
-                    if (loggedIn === 'true') {
+                    if (seen !== 'true') {
+                        router.replace('/onboarding');
+                    } else if (loggedIn === 'true') {
                         router.replace('/(tabs)/home');
                     } else {
                         router.replace('/(auth)/login');

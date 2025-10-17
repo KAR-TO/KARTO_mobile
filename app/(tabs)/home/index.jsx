@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { Image, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, StatusBar, Dimensions } from 'react-native';
+import { Dimensions, Image, Platform, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import CustomButton from '../../../components/CustomButton';
 import { Colors, Fonts } from '../../../constants/theme';
 
@@ -54,6 +54,15 @@ export default function HomeScreen() {
         router.push({ pathname: '/(tabs)/wallets', params: { openFilter: '1' } });
     };
 
+    // DEV: Quickly preview onboarding
+    const showOnboarding = useCallback(async () => {
+        try {
+            await AsyncStorage.removeItem('hasSeenOnboarding');
+            router.push('/onboarding');
+        } catch (e) {
+            console.log('Failed to reset onboarding flag:', e?.message);
+        }
+    }, [router]);
 
 
     return (
@@ -62,7 +71,7 @@ export default function HomeScreen() {
             contentContainerStyle={[styles.categoriesContent, {
                 paddingTop:
                     Platform.OS === 'android'
-                        ? height * 0.04 
+                        ? height * 0.04
                         : height * 0.02,
             }]}
         >
@@ -92,6 +101,11 @@ export default function HomeScreen() {
                     <TouchableOpacity style={styles.filterButton} onPress={handleFilterPress}>
                         <Ionicons name="filter" size={20} color={Colors.textSecondary} />
                     </TouchableOpacity>
+                    {/* {__DEV__ && (
+                        <TouchableOpacity style={styles.devButton} onPress={showOnboarding}>
+                            <Text style={styles.devButtonText}>Onboarding</Text>
+                        </TouchableOpacity>
+                    )} */}
                 </View>
                 <ScrollView
                     horizontal
@@ -200,6 +214,20 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         marginLeft: 12,
+    },
+    devButton: {
+        paddingHorizontal: 10,
+        marginLeft: 8,
+        height: 48,
+        borderRadius: 12,
+        backgroundColor: '#e2e8f0',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    devButtonText: {
+        fontSize: 12,
+        color: '#111827',
+        fontFamily: Fonts.Poppins_Regular,
     },
     categoriesContainer: {
         paddingBottom: 5,

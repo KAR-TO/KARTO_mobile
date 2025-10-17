@@ -14,7 +14,7 @@ const CustomButton = ({
 }) => {
   return (
     <TouchableOpacity
-      activeOpacity={0.7}
+      activeOpacity={0.8}
       style={[
         styles.button,
         { backgroundColor: disabled ? Colors.disabled : backgroundColor },
