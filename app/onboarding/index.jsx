@@ -23,14 +23,14 @@ export default function OnboardingScreen() {
             title: 'KARTO-ya xoş gəlmisiniz!',
             subtitle: 'İlk hədiyyə kartı satışı üzrə tətbiq - “Karto” - sizə sevdiyiniz brendlər arasında geniş seçim, yaxınlarınız və dostlarınıza isə unudulmaz xatirə bağışlayacaq.',
             image: DollarIcon,
-            colors: ['#a3e4c3ff', '#8ddfa9ff'],
+            colors: ['#72ab8eff', '#79dd9aff'],
         },
         {
             key: 'secure',
             title: 'Ödəniş prossesi',
             subtitle: 'Həm Apple/Google Pay, həm də bank kartını məlumatlarını yığaraq kartı əldə edə bilərsiniz. Əgər kartı digər şəxsə alırsınızsa, o da “Karto”-dan qeydiyyatdan keçməlidir.',
             image: ThunderIcon,
-            colors: ['#bbf7d0', '#75df9cff'],
+            colors: ['#72ab8eff', '#79dd9aff'],
 
         },
         {
@@ -38,7 +38,7 @@ export default function OnboardingScreen() {
             title: 'Kartdan istifadə',
             subtitle: 'Müəssisədə unikal QR code scan edərək, və hansı kartla (universal və ya fərdi müəssisə) ödəniş ediləciyin seçin. Qismən ödəniş də mövcüddur (bir hissə kartımızla, bir hissə nəğd və ya bank kartı ilə )',
             image: BanknoteIcon,
-            colors: ['#b9f0d6ff', '#97e7beff'],
+            colors: ['#72ab8eff', '#79dd9aff'],
         },
     ];
 
